@@ -1,10 +1,12 @@
+import pandas as pd
+from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.svm import SVR
 from sklearn import linear_model
 from sklearn import pipeline
 from sklearn import model_selection
 from sklearn import metrics
-import pandas as pd
-from sklearn.model_selection import GridSearchCV
 
 
 '''
@@ -12,37 +14,94 @@ Import data
 '''
 data=pd.read_csv('Aripiprazol.csv')
 
-data.shape
-data.head()
+#data.shape
+#data.head()
 
 '''
 Create feature sets
 '''
 
+Y=data.iloc[:,-1] # label
+X=data.iloc[:,:-1] # input data
 
 '''
-Initialize algorithms
+Define scoring (evaluation measures)
 '''
 
-linear_regression=linear_model.LinearRegression()
-random_forest=RandomForestRegressor(n_estimators=30, max_depth=3)
-# add k-nn, svm, gbt, lasso,
+scoring = ['explained_variance', 'neg_mean_absolute_error', 'neg_mean_squared_error', 'r2', 'neg_mean_squared_log_error', 'neg_median_absolute_error']
 
 
-#Parameters, best result by different validation criteria
+# 6 features
+
+# 15 features
+
+'''
+Optimize algorithms
+'''
+
+# add k-nn, svm, gbt, lasso, linear regression
+
 
 
 gs = GridSearchCV(RandomForestRegressor(random_state=42),
                   param_grid={'max_depth': range(2, 5, 1)},
-                  scoring=scoring, cv=5, refit='neg_mean_squared_error')
+                  scoring=scoring, cv=5, refit='neg_mean_squared_error', n_jobs=4, )
 
 gs.fit(X, Y)
 results = gs.cv_results_
 
-pd.DataFrame(results).head()
+
+a.columns
+'rank_test_neg_mean_squared_log_error'
+
+a.filter(regex='^(?!split)', axis=1)
+
+vec=a['rank_test_neg_mean_squared_log_error']==1
+a[vec]
+
+
+
+gs.predict(X)
+
+'''
+Log results
+'''
+
+a=pd.DataFrame(results)
+a.columns
+
+a.columns.startswith('split')
+
+a.filter[]
+
+score_vector=['mean_fit_time', 'mean_score_time', 'mean_test_explained_variance',
+       'mean_test_neg_mean_absolute_error', 'mean_test_neg_mean_squared_error',
+       'mean_test_neg_mean_squared_log_error',
+       'mean_test_neg_median_absolute_error', 'mean_test_r2',
+       'mean_train_explained_variance', 'mean_train_neg_mean_absolute_error',
+       'mean_train_neg_mean_squared_error',
+       'mean_train_neg_mean_squared_log_error',
+       'mean_train_neg_median_absolute_error', 'mean_train_r2',
+       'param_max_depth', 'params', 'rank_test_explained_variance',
+       'rank_test_neg_mean_absolute_error', 'rank_test_neg_mean_squared_error',
+       'rank_test_neg_mean_squared_log_error',
+       'rank_test_neg_median_absolute_error', 'rank_test_r2',
+    'std_fit_time', 'std_score_time', 'std_test_explained_variance',
+       'std_test_neg_mean_absolute_error', 'std_test_neg_mean_squared_error',
+       'std_test_neg_mean_squared_log_error',
+       'std_test_neg_median_absolute_error', 'std_test_r2',
+       'std_train_explained_variance', 'std_train_neg_mean_absolute_error',
+       'std_train_neg_mean_squared_error',
+       'std_train_neg_mean_squared_log_error',
+       'std_train_neg_median_absolute_error', 'std_train_r2']
+
+
+pd.DataFrame(results).columns
 
 gs.best_params_
 gs.best_estimator_
+
+
 
 '''
 Set parameters
@@ -54,8 +113,6 @@ Set parameters
 '''
 Set experiments (cross validation)
 '''
-Y=data.iloc[:,-1]
-X=data.iloc[:,:-1]
 
 list(range(2, 403, 10))
 
@@ -63,18 +120,23 @@ list(range(2, 403, 10))
 Set evaluation measures
 '''
 
-scoring = ['explained_variance','neg_mean_absolute_error', 'neg_mean_squared_error', 'r2', 'neg_mean_squared_log_error', 'neg_median_absolute_error']
 
-'''
-Feature selection techniques
-'''
 
 
 '''
 Run experiments
 '''
 
+'''
+### SVR
 
+param_grid = [
+  {'C': [1, 10, 100, 1000], 'kernel': ['linear']},
+  {'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
+ ]
+
+
+'''
 
 '''
 Pipelining
