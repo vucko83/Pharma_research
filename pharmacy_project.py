@@ -68,13 +68,14 @@ models.append(('LR',LinearRegression, lr_parameters))
 '''
 Optimize Models
 '''
-
+i=1
 results=[]
 for name, model, params in models:
     gs = GridSearchCV(model,
                   param_grid=params,
-                  scoring=scoring, cv=5, refit='neg_mean_squared_error', n_jobs=2)
+                  scoring=scoring, cv=10, refit='neg_mean_squared_error', n_jobs=2)
     gs.fit(X, Y)
+    print(i,name)
     result=pd.DataFrame(gs.cv_results_).filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
     vec=result['rank_test_neg_mean_squared_log_error']==1
     result=result[vec]
