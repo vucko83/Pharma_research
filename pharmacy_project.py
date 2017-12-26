@@ -1,12 +1,27 @@
 import pandas as pd
-from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.svm import SVR
-from sklearn import linear_model
-from sklearn import pipeline
+import pickle as pkl
 from sklearn import model_selection
+from sklearn.model_selection import GridSearchCV
+
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import LinearRegression
+from sklearn.neural_network import MLPRegressor
+
+from sklearn.svm import SVR
+
+from sklearn import pipeline
 from sklearn import metrics
+
+'''
+Store preocedure
+'''
+def store_model(model, name):
+    path='Models/'+name+'.pkl'
+    file=open(path, 'wb')
+    pkl._dump(model,file)
 
 
 '''
@@ -23,41 +38,73 @@ Create feature sets
 
 Y=data.iloc[:,-1] # label
 X=data.iloc[:,:-1] # input data
+X.shape
+# 6, 15 features
 
 '''
 Define scoring (evaluation measures)
 '''
-
 scoring = ['explained_variance', 'neg_mean_absolute_error', 'neg_mean_squared_error', 'r2', 'neg_mean_squared_log_error', 'neg_median_absolute_error']
 
-
-# 6 features
-
-# 15 features
-
 '''
-Optimize algorithms
+Define Algorithms
 '''
 
-# add k-nn, svm, gbt, lasso, linear regression
+random_forest_parameters={'max_depth': range(2, 5, 1), 'n_estimators ': range(10, 101, 10), 'max_features':range(5,31,5), 'min_samples_leaf': range(2,11,2)}
+knn_parameters={'n_neighbors': range(1,11,1)}
+gbt_parameters={'max_depth': range(2, 5, 1), 'n_estimators ': range(10, 101, 10), 'max_features':range(5,31,5), 'min_samples_leaf': range(2,11,2), 'learning_rate':range(0.1,1,0.2)}
+ann_parameters={'learning_rate':'adaptive', 'momentum':range(0.1,1,0.1), 'max_iter':[10, 50, 100, 200, 500]}
+lasso_parameters={'alpha':range(0,1,0.1)}
+lr_parameters={'normalize':True}
+
+models=[]
+models.append(('K-nn', KNeighborsRegressor(), knn_parameters))
+models.append(('Random_Forest', RandomForestRegressor(random_state=42), random_forest_parameters))
+models.append(('GBT', GradientBoostingRegressor(random_state=42), gbt_parameters))
+models.append(('ANN', MLPRegressor, ann_parameters))
+models.append(('Lasso',Lasso, lasso_parameters))
+models.append(('LR',LinearRegression, lr_parameters))
+
+'''
+Optimize Models
+'''
+
+results=[]
+for name, model, params in models:
+    gs = GridSearchCV(model,
+                  param_grid=params,
+                  scoring=scoring, cv=5, refit='neg_mean_squared_error', n_jobs=2)
+    gs.fit(X, Y)
+    result=pd.DataFrame(gs.cv_results_).filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
+    vec=result['rank_test_neg_mean_squared_log_error']==1
+    result=result[vec]
+    result['Name']=name  # add name of algorithm to log
+    results.append((name, result , gs.best_estimator_, {name:gs.best_params_}))
+
+
+df_predictions=pd.DataFrame(Y) #Creates initial df with ground truth
+full_results=[]
+best_params_full={}
+for name, result, best_estimator, best_params in results: #adds
+    store_model(best_estimator, name)
+    full_results.append(result)
+    df_predictions[name]=best_estimator.predict(X)
+    best_params_full.update(best_params)
+
+
+import json
+
+with open('best_params.json', 'w') as outfile:
+    json.dump(best_params_full, outfile)
+
+df_results=pd.concat(full_results)
+df_results.to_csv('results.csv')
+df_predictions.to_csv('predictions.csv')
 
 
 
-gs = GridSearchCV(RandomForestRegressor(random_state=42),
-                  param_grid={'max_depth': range(2, 5, 1)},
-                  scoring=scoring, cv=5, refit='neg_mean_squared_error', n_jobs=4, )
-
-gs.fit(X, Y)
-results = gs.cv_results_
 
 
-a.columns
-'rank_test_neg_mean_squared_log_error'
-
-a.filter(regex='^(?!split)', axis=1)
-
-vec=a['rank_test_neg_mean_squared_log_error']==1
-a[vec]
 
 
 
@@ -74,26 +121,7 @@ a.columns.startswith('split')
 
 a.filter[]
 
-score_vector=['mean_fit_time', 'mean_score_time', 'mean_test_explained_variance',
-       'mean_test_neg_mean_absolute_error', 'mean_test_neg_mean_squared_error',
-       'mean_test_neg_mean_squared_log_error',
-       'mean_test_neg_median_absolute_error', 'mean_test_r2',
-       'mean_train_explained_variance', 'mean_train_neg_mean_absolute_error',
-       'mean_train_neg_mean_squared_error',
-       'mean_train_neg_mean_squared_log_error',
-       'mean_train_neg_median_absolute_error', 'mean_train_r2',
-       'param_max_depth', 'params', 'rank_test_explained_variance',
-       'rank_test_neg_mean_absolute_error', 'rank_test_neg_mean_squared_error',
-       'rank_test_neg_mean_squared_log_error',
-       'rank_test_neg_median_absolute_error', 'rank_test_r2',
-    'std_fit_time', 'std_score_time', 'std_test_explained_variance',
-       'std_test_neg_mean_absolute_error', 'std_test_neg_mean_squared_error',
-       'std_test_neg_mean_squared_log_error',
-       'std_test_neg_median_absolute_error', 'std_test_r2',
-       'std_train_explained_variance', 'std_train_neg_mean_absolute_error',
-       'std_train_neg_mean_squared_error',
-       'std_train_neg_mean_squared_log_error',
-       'std_train_neg_median_absolute_error', 'std_train_r2']
+
 
 
 pd.DataFrame(results).columns
