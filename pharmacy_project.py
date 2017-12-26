@@ -77,7 +77,7 @@ results=[]
 for name, model, params in models:
     gs = GridSearchCV(model,
                   param_grid=params,
-                  scoring=scoring, cv=2, refit='neg_mean_squared_error', n_jobs=2)
+                  scoring=scoring, cv=10, refit='neg_mean_squared_error', n_jobs=4, return_train_score=True)
     gs.fit(X, Y)
     print(i+1,name)
     result=pd.DataFrame(gs.cv_results_).filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
@@ -112,46 +112,14 @@ df_predictions.to_csv('predictions.csv')
 
 
 
-
-gs.predict(X)
-
-'''
-Log results
 '''
 
-a=pd.DataFrame(results)
-a.columns
-
-a.columns.startswith('split')
-
-a.filter[]
-
-
-
-
-pd.DataFrame(results).columns
-
-gs.best_params_
-gs.best_estimator_
-
-
-
-'''
-Set parameters
 '''
 
 
 
 
-'''
-Set experiments (cross validation)
-'''
 
-list(range(2, 403, 10))
-
-'''
-Set evaluation measures
-'''
 
 
 
@@ -184,12 +152,3 @@ clf.fit(X, y)
 
 '''
 
-
-linear_regression.fit(X, Y)
-
-cv=model_selection.cross_validate(random_forest.fit(X,Y),X,Y,cv=10, scoring=scoring, return_train_score=True)
-
-
-pd.DataFrame(cv)
-
-print(cv)
