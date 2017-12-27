@@ -42,6 +42,7 @@ X=data.iloc[:,:-1] # input data
 #X=X.iloc[0:30,0:5]
 
 X.shape
+Y.shape
 # 6, 15 features
 
 '''
@@ -56,7 +57,7 @@ Define Algorithms
 
 random_forest_parameters={'max_depth': range(2, 5, 1), 'n_estimators': range(10, 101, 10), 'max_features':range(5,30,5), 'min_samples_leaf': range(2,11,2)}
 knn_parameters={'n_neighbors': range(1,11,1)}
-gbt_parameters={'max_depth': range(2, 5, 1), 'n_estimators': range(10, 101, 10), 'max_features':range(5,30,5), 'min_samples_leaf': range(2,11,2),'learning_rate':[0.1,0.2,0.4,0.6,0.8,0.9,1]}
+gbt_parameters={'max_depth': range(2, 5, 1), 'n_estimators': range(10, 101, 10), 'max_features':range(5,20,5), 'min_samples_leaf': range(2,11,2),'learning_rate':[0.1,0.2,0.3,0.4]}
 ann_parameters={'learning_rate':['constant'], 'learning_rate_init':[0.01,0.1,0.2,0.4,0.6,0.8,0.9], 'momentum':[0.1,0.2,0.4,0.6,0.8,0.9], 'max_iter':[10]}
 lasso_parameters={'alpha':[0.1,0.2,0.4,0.6,0.8,0.9,1]}
 lr_parameters={'normalize':[True]}
@@ -64,7 +65,7 @@ lr_parameters={'normalize':[True]}
 models=[]
 models.append(('K-nn', KNeighborsRegressor(), knn_parameters))
 models.append(('Random_Forest', RandomForestRegressor(random_state=42), random_forest_parameters))
-models.append(('GBT', GradientBoostingRegressor(random_state=42), gbt_parameters))
+models.append(('GBT', GradientBoostingRegressor(), gbt_parameters))
 #models.append(('ANN', MLPRegressor(), ann_parameters))
 models.append(('Lasso',Lasso(), lasso_parameters))
 models.append(('LR',LinearRegression(), lr_parameters))
@@ -77,7 +78,7 @@ results=[]
 for name, model, params in models:
     gs = GridSearchCV(model,
                   param_grid=params,
-                  scoring=scoring, cv=10, refit='neg_mean_squared_error', n_jobs=4, return_train_score=True)
+                  scoring=scoring, cv=10, refit='neg_mean_squared_error', return_train_score=True)
     gs.fit(X, Y)
     print(i+1,name)
     result=pd.DataFrame(gs.cv_results_).filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
