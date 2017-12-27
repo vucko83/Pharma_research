@@ -9,6 +9,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
+#import xgboost as xgb
 
 from sklearn.svm import SVR
 
@@ -47,7 +48,7 @@ X.shape
 '''
 Define scoring (evaluation measures)
 '''
-scoring = ['explained_variance', 'neg_mean_absolute_error', 'neg_mean_squared_error', 'r2', 'neg_mean_squared_log_error', 'neg_median_absolute_error']
+scoring = ['neg_mean_squared_error', 'explained_variance', 'neg_mean_absolute_error', 'r2', 'neg_median_absolute_error']
 
 '''
 Define Algorithms
@@ -56,16 +57,16 @@ Define Algorithms
 
 random_forest_parameters={'max_depth': range(2, 5, 1), 'n_estimators': range(10, 101, 10), 'max_features':range(5,30,5), 'min_samples_leaf': range(2,11,2)}
 knn_parameters={'n_neighbors': range(1,11,1)}
-gbt_parameters={'max_depth': range(2, 5, 1), 'n_estimators': range(10, 101, 10), 'max_features':range(5,30,5), 'min_samples_leaf': range(2,11,2),'learning_rate':[0.1,0.2,0.4,0.6,0.8,0.9,1]}
-ann_parameters={'learning_rate':['constant'], 'learning_rate_init':[0.01,0.1,0.2,0.4,0.6,0.8,0.9], 'momentum':[0.1,0.2,0.4,0.6,0.8,0.9], 'max_iter':[10]}
-lasso_parameters={'alpha':[0.1,0.2,0.4,0.6,0.8,0.9,1]}
+gbt_parameters={'max_depth': range(2, 6, 1), 'n_estimators': range(10, 101,10), 'max_features':range(5,30,5), 'min_samples_leaf': range(2,11,2)}
+ann_parameters={'learning_rate':['constant'], 'learning_rate_init':[0.1,0.2,0.4,0.6,0.8,0.9], 'momentum':[0.1,0.2,0.4,0.6,0.8,0.9], 'max_iter':[50000]}
+lasso_parameters={'alpha':[0.1,0.2,0.4,0.6,0.8,0.9], 'max_iter':[10000]}
 lr_parameters={'normalize':[True]}
 
 models=[]
 models.append(('K-nn', KNeighborsRegressor(), knn_parameters))
 models.append(('Random_Forest', RandomForestRegressor(random_state=42), random_forest_parameters))
 models.append(('GBT', GradientBoostingRegressor(random_state=42), gbt_parameters))
-#models.append(('ANN', MLPRegressor(), ann_parameters))
+models.append(('ANN', MLPRegressor(), ann_parameters))
 models.append(('Lasso',Lasso(), lasso_parameters))
 models.append(('LR',LinearRegression(), lr_parameters))
 
@@ -77,11 +78,12 @@ results=[]
 for name, model, params in models:
     gs = GridSearchCV(model,
                   param_grid=params,
-                  scoring=scoring, cv=10, refit='neg_mean_squared_error', n_jobs=4, return_train_score=True)
+                  scoring=scoring, cv=10,  return_train_score=True, refit=scoring[0], n_jobs=2)
     gs.fit(X, Y)
     print(i+1,name)
     result=pd.DataFrame(gs.cv_results_).filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
-    vec=result['rank_test_neg_mean_squared_log_error']==1
+    result = result.filter(regex='^(?!param_)', axis=1)
+    vec=result['rank_test_neg_mean_squared_error']==1
     result=result[vec]
     result['Name']=name  # add name of algorithm to log
     results.append((name, result , gs.best_estimator_, {name:gs.best_params_}))
@@ -97,6 +99,7 @@ for name, result, best_estimator, best_params in results: #adds
     best_params_full.update(best_params)
 
 
+
 import json
 
 with open('best_params.json', 'w') as outfile:
@@ -105,11 +108,6 @@ with open('best_params.json', 'w') as outfile:
 df_results=pd.concat(full_results)
 df_results.to_csv('results.csv')
 df_predictions.to_csv('predictions.csv')
-
-
-
-
-
 
 
 '''
