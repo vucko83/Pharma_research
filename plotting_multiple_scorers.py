@@ -1,3 +1,5 @@
+import xgboost as xgb
+
 '''
 plt.figure(figsize=(13, 13))
 plt.title("GridSearchCV evaluating using multiple scorers simultaneously",
