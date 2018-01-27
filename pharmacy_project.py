@@ -37,6 +37,13 @@ data=pd.read_csv('Aripiprazol.csv')
 Create feature sets
 '''
 
+
+
+
+'''
+Split on label and predictors
+'''
+
 Y=data.iloc[:,-1] # label
 X=data.iloc[:,:-1] # input data
 #Y=Y[0:30]
@@ -70,6 +77,7 @@ models.append(('ANN', MLPRegressor(), ann_parameters))
 models.append(('Lasso',Lasso(), lasso_parameters))
 models.append(('LR',LinearRegression(), lr_parameters))
 
+!pip install sparqlwrapper
 '''
 Optimize Models
 '''
@@ -108,12 +116,6 @@ with open('best_params.json', 'w') as outfile:
 df_results=pd.concat(full_results)
 df_results.to_csv('results.csv')
 df_predictions.to_csv('predictions.csv')
-
-
-'''
-
-'''
-
 
 
 
