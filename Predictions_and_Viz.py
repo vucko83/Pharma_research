@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 
 data=pd.read_csv('Aripiprazol.csv')
 
-
 def read_model(name, feature_set):
     path='Models/'+name+feature_set+'.pkl'
     print(path)
@@ -57,10 +56,38 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import LeaveOneOut
 
-y_hat = cross_val_predict(model, X1, y1, cv=10)
-scores=cross_val_score(model, X1, y1, cv=10, scoring='r2')
-scores
-r2_score(y1, y_hat)
+#data['y_hat'] = cross_val_predict(model, X, y, cv=10)
+
+#data['diff']=np.abs(data.y_hat-data.k)
+
+'''
+
+'''
+
+data['y_hat']=cross_val_predict(model, pd.DataFrame(X), y, cv=10)
+data['diff']=abs(data.y_hat-data.k)
+data['diff'].nlargest(3)
+
+
+diff=np.column_stack((y,y_hat))
+abs_diff=np.abs(diff[:,0]-diff[:,1])
+np.sort (abs_diff)
+
+diff[:,0]-diff[:,1]
+
+abs_diff.arg_sort()[-3:][::-1]
+
+np.argsort(abs_diff)
+
+abs_diff[73]
+
+[2,4,9]
+
+y[9]
+y[4]
+y[2]
+
+np.concatenate(y,y_hat)
 
 np.average(scores)
 

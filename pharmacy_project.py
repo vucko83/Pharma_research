@@ -11,6 +11,7 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR
 #import xgboost as xgb
 
 from sklearn.svm import SVR
@@ -96,14 +97,22 @@ def create_models(n_samples, m_features):
                       'hidden_layer_sizes': nn_size(m_features)}
     lasso_parameters = {'alpha': [0.1, 0.2, 0.4, 0.6, 0.8, 0.9], 'max_iter': [10000, 50000]}
     lr_parameters = {'normalize': [True]}
+    svr_parameters = {'C': [1, 10, 100, 1000], 'kernel': ['linear', 'rbf']}
+
 
     models = []
-    models.append(('K-nn', KNeighborsRegressor(), knn_parameters))
-    models.append(('Random_Forest', RandomForestRegressor(random_state=42), random_forest_parameters))
+    '''
+
+    models.append(('RF', RandomForestRegressor(random_state=42), random_forest_parameters))
     models.append(('GBT', GradientBoostingRegressor(random_state=42), gbt_parameters))
     models.append(('ANN', MLPRegressor(), ann_parameters))
     models.append(('Lasso', Lasso(), lasso_parameters))
+    '''
+    models.append(('K-nn', KNeighborsRegressor(), knn_parameters))
     models.append(('LR', LinearRegression(), lr_parameters))
+
+
+    models.append(('SVR', SVR(), svr_parameters ))
     return (models)
 
 
@@ -111,6 +120,11 @@ def create_models(n_samples, m_features):
 Import data
 '''
 data=pd.read_csv('Aripiprazol.csv')
+
+#data=data.drop(data.index[[9,2,73]])
+
+data=data[data.k<=9.5]
+
 #SCALE FEATURES
 datasets =create_feature_sets(data)
 
@@ -146,7 +160,7 @@ for feature_set, data in datasets.items():
     for name, model, params in models:
         gs = GridSearchCV(model,
                       param_grid=params,
-                      scoring=scoring, cv=10,  return_train_score=True, refit=scoring[0], n_jobs=2)
+                      scoring=scoring, cv=10,  return_train_score=True, refit=scoring[0], n_jobs=4)
         gs.fit(X, Y)
         print(i+1,feature_set,name)
         result=pd.DataFrame(gs.cv_results_).filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
@@ -179,8 +193,13 @@ df_results=pd.concat(full_results)
 df_results.to_csv('results.csv')
 #df_predictions.to_csv('predictions.csv')
 
+data.k
 
+data.k.iloc[9]
+data.k.iloc[4]
+data.k.iloc[2]
 
+data[np.abs(data.k-9.0083333329999995)<=0.01]
 
 
 
@@ -193,10 +212,6 @@ Run experiments
 '''
 ### SVR
 
-param_grid = [
-  {'C': [1, 10, 100, 1000], 'kernel': ['linear']},
-  {'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
- ]
 
 
 '''
