@@ -1,0 +1,85 @@
+import pandas as pd
+import pickle as pkl
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+
+data=pd.read_csv('Aripiprazol.csv')
+
+
+def read_model(name, feature_set):
+    path='Models/'+name+feature_set+'.pkl'
+    print(path)
+    file=open(path, 'rb')
+    model=pkl.load(file)
+    return(model)
+
+def create_feature_sets(data):
+    predictors_6=['Brij', 'pH', 'acetonitril', 'Stretch Bend E',  'Non-1.4 VDW E', 'Rad', 'k']
+    # Based on corellation
+    predictors_15=['Brij', 'pH', 'acetonitril', 'Stretch Bend E',  'Non-1.4 VDW E', 'Rad', 'ShpC', 'H-don', 'H-acc', 'logP', 'pol', 'Ecd', 'Ed', 'Torsion E (Et)', 'Total Energy (E)', 'k']
+    return ({'6_features':data[predictors_6], '15_features':data[predictors_15], '30_features':data})
+
+def prepare_data(data):
+    Y=data.iloc[:,-1] # label
+    X=data.iloc[:,:-1] # input data
+    scaler = StandardScaler()
+    scaler.fit(X)
+    X = scaler.transform(X)
+    return (X, Y)
+
+
+names=['ANN', 'GBT', 'K-NN', 'Lasso', 'LR', 'Random_Forest']
+
+feature_sets=['_6_features', '_15_features', '_30_features']
+
+datasets=create_feature_sets(data)
+
+df=datasets['15_features']
+X,y=prepare_data(df)
+
+df.head()
+
+model=read_model(names[1], feature_sets[1])
+
+y_hat=model.predict(X)
+y=np.array(y)
+
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(color_codes=True)
+np.random.seed(sum(map(ord, "regression")))
+
+from sklearn.metrics import r2_score
+
+from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import LeaveOneOut
+
+y_hat = cross_val_predict(model, X1, y1, cv=10)
+scores=cross_val_score(model, X1, y1, cv=10, scoring='r2')
+scores
+r2_score(y1, y_hat)
+
+np.average(scores)
+
+
+from sklearn.ensemble import IsolationForest
+# fit the model
+rng = np.random.RandomState(42)
+clf = IsolationForest(random_state=rng)
+clf.fit(X)
+y_pred_train = clf.predict(X)
+
+X1=X[y_pred_train==1,:]
+y1=y[y_pred_train==1]
+len(y1)
+
+fig, ax = plt.subplots()
+ax.scatter(y, y_hat, edgecolors=(0, 0, 0))
+ax.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=4)
+ax.set_xlabel('Measured')
+ax.set_ylabel('Predicted')
+plt.title('')
+plt.show()
