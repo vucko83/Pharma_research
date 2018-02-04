@@ -14,6 +14,7 @@ from sklearn.svm import LinearSVC
 from sklearn.decomposition import PCA, NMF
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 
 data=pd.read_csv('Aripiprazol.csv')
@@ -38,9 +39,11 @@ X.describe
 
 '''
 from sklearn.ensemble import IsolationForest
+X,y, n_samples, m_features=prepare_data(data)
+
 pipe = Pipeline([
-    ('normalize', StandardScaler()),
-    ('outliers', IsolationForest),
+    ('normalize', MinMaxScaler()),
+    #('outliers', IsolationForest),
     ('reduce_dim', PCA()),
     ('classify', SVR())
 ])
@@ -48,12 +51,14 @@ pipe = Pipeline([
 from sklearn.feature_selection import f_regression
 from sklearn.feature_selection import mutual_info_regression
 
+
+'''
 N_FEATURES_OPTIONS = [2, 4, 8, 16, 28]
 C_OPTIONS = [1, 10, 100, 1000]
 param_grid = [
     {
         # 'reduce_dim': [PCA(iterated_power=7), NMF()],
-        'reduce_dim': [PCA()],
+        'reduce_dim': [PCA(), NMF()],
         'reduce_dim__n_components': N_FEATURES_OPTIONS,
         'classify__C': C_OPTIONS
     },
@@ -67,10 +72,13 @@ param_grid = [
 ]
 reducer_labels = ['PCA', 'NMF', 'KBest(chi2)']
 
+'''
+
+
 
 
 scoring = ['neg_mean_squared_error', 'r2']
-grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=param_grid, return_train_score=True)
+grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=2, param_grid=a, return_train_score=True)
 grid.fit(X, y).predict(X)
 grid.cv_results_
 

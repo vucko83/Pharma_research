@@ -51,6 +51,13 @@ def create_feature_sets(data):
     return ({'6_features':data[predictors_6], '15_features':data[predictors_15], '30_features':data})
 
 def n_features_range(n_samples, m_features, m_n_ratio=1):
+    '''
+    
+    :param n_samples: 
+    :param m_features: 
+    :param m_n_ratio: 
+    :return: 
+    '''
 
     max_features=int(round(n_samples/m_n_ratio))
     if m_features<max_features:
@@ -160,7 +167,7 @@ for feature_set, data in datasets.items():
     for name, model, params in models:
         gs = GridSearchCV(model,
                       param_grid=params,
-                      scoring=scoring, cv=10,  return_train_score=True, refit=scoring[0], n_jobs=4)
+                      scoring=scoring, cv=10,  return_train_score=True, refit=scoring[0], n_jobs=2)
         gs.fit(X, Y)
         print(i+1,feature_set,name)
         result=pd.DataFrame(gs.cv_results_).filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
