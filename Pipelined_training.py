@@ -41,7 +41,7 @@ pipe = Pipeline([
 
 
 scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
-grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=param_dicts_all, return_train_score=True)
+grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, y).predict(X)
 
 df=pd.DataFrame(grid.cv_results_)

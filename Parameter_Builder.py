@@ -161,4 +161,4 @@ def create_params_k_best(name='reduce_dim', reducers=[SelectKBest()], n_samples=
 
 
 params_dicts=create_params_pca_nmf(funcs=algorithms)
-param_dicts_all=params_dicts+create_params_k_best(funcs=algorithms)
+params_dicts_all=params_dicts+create_params_k_best(funcs=algorithms)
