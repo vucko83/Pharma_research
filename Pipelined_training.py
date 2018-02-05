@@ -20,7 +20,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 
-data=pd.read_csv('Aripiprazol.csv')
+
 
 def prepare_data(data):
     Y=data.iloc[:,-1] # label
@@ -30,22 +30,22 @@ def prepare_data(data):
     return (X, Y, n_samples, m_features)
 
 
-X,y, n_samples, m_features=prepare_data(data)
-
 pipe = Pipeline([
     ('normalize', MinMaxScaler()),
     ('reduce_dim', PCA()),
     ('classify', SVR())
 ])
 
-
+data=pd.read_csv('Aripiprazol.csv')
+data=data[data.k<10]
+X,y, n_samples, m_features=prepare_data(data)
 
 scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
 grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, y).predict(X)
 
 df=pd.DataFrame(grid.cv_results_)
-df.to_csv('test_results.csv')
+df.to_csv('test_results._without_10csv')
 
 '''
 X.describe()
