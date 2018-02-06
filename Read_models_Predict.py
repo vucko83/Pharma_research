@@ -81,14 +81,32 @@ param_grid = [
     ]
 
 
-np.log(X)
+
 
 scoring = ['neg_mean_squared_error', 'r2']
 grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=param_grid, return_train_score=True)
-grid.fit(X1, y1)
+grid.fit(X, np.log(y))
 
 grid.cv_results_['mean_test_r2']
 grid.best_params_
+
+
+from sklearn.model_selection import cross_val_predict
+from matplotlib import pyplot as plt
+from sklearn.metrics import r2_score
+np.set_printoptions(suppress=True)
+
+y_hat=cross_val_predict(grid, pd.DataFrame(X), np.log(y), cv=10)
+
+y_hat_exp=np.exp(y_hat)
+r2_score(y,y_hat_exp)
+
+y_hat_exp
+
+
+
+
+
 
 ############ Vizualization #############
 
