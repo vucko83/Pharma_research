@@ -57,7 +57,7 @@ Feature selectors
 def lasso_param_dict(name='classify', estimators=[Lasso()], n_samples=100, m_features=15):
     dict={
         name: estimators,
-        name + '__' + 'alpha': [0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
+        name + '__' + 'alpha': [0.01, 0.03, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
         name + '__' + 'max_iter': [100000]
     }
     return (dict)
@@ -65,7 +65,7 @@ def lasso_param_dict(name='classify', estimators=[Lasso()], n_samples=100, m_fea
 def SVR_param_dict(name='classify', estimators=[SVR()], n_samples=100, m_features=15):
     dict={
         name: estimators,
-        name + '__' + 'C': [0.1, 0.5, 1, 10, 100, 500, 1000],
+        name + '__' + 'C': [0.01, 0.03, 0.05, 0.1, 0.5, 1, 10, 100, 500, 1000],
         name + '__' + 'kernel': ['linear', 'rbf']
     }
     return (dict)
@@ -75,7 +75,7 @@ def rf_param_dict(name='classify', estimators=[RandomForestRegressor()], n_sampl
         name: estimators,
         name + '__' + 'n_estimators': range(20, 101, 20),
         name + '__' + 'max_features': n_features_range(n_samples, m_features),
-        name + '__' + 'min_samples_leaf': np.arange(0.01, 0.06, 0.01),
+        name + '__' + 'min_samples_leaf': np.arange(0.01, 0.03, 0.05),
         name + '__' + 'max_depth': range(2, 11, 2)
     }
     return (dict)
@@ -86,7 +86,7 @@ def gbt_param_dict(name='classify', estimators=[GradientBoostingRegressor()], n_
         name: estimators,
         name + '__' + 'n_estimators': range(10, 101, 20),
         name + '__' + 'max_features': n_features_range(n_samples, m_features),
-        name + '__' + 'min_samples_leaf': np.arange(0.01, 0.06, 0.01),
+        name + '__' + 'min_samples_leaf': np.arange(0.01, 0.03, 0.05),
         name + '__' + 'max_depth': range(2, 11, 2)
     }
     return (dict)
@@ -104,7 +104,7 @@ def ann_param_dict(name='classify', estimators=[MLPRegressor()], n_samples=100, 
     dict={
         name: estimators,
         name + '__' + 'learning_rate': ['constant'],
-        name + '__' + 'momentum': [0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
+        name + '__' + 'momentum': [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
         name + '__' + 'max_iter': [50000],
         name + '__' + 'hidden_layer_sizes': nn_size(m_features)
     }
@@ -122,7 +122,7 @@ def lr_param_dict(name='classify', estimators=[LinearRegression()], n_samples=10
 def ridge_param_dict(name='classify', estimators=[Ridge()], n_samples=100, m_features=15):
     dict={
         name: estimators,
-        name + '__' + 'alpha': [0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
+        name + '__' + 'alpha': [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
         name + '__' + 'max_iter': [100000]
     }
     return (dict)
