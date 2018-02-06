@@ -36,7 +36,7 @@ pipe = Pipeline([
     ('classify', SVR())
 ])
 
-data=pd.read_csv('Aripiprazol.csv')
+data=pd.read_csv('Aripiprazol_2.csv')
 #data=data[data.k<10]
 X,y, n_samples, m_features=prepare_data(data)
 
@@ -51,6 +51,7 @@ grid2.fit(X, np.log(y))
 
 df2=pd.DataFrame(grid2.cv_results_)
 df2.to_csv('test_results_new_log.csv')
+
 
 
 '''
