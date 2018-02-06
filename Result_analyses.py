@@ -1,5 +1,5 @@
 import pandas as pd
-df=pd.read_csv('test_results.csv')
+df=pd.read_csv('test_results_without_10.csv')
 df.shape
 
 df.columns[:20]
@@ -22,6 +22,8 @@ best_rmse=df[idx]
 
 best_rmse.shape
 
+
+
 best_rmse.to_csv('results_best_rmse.csv')
 best_rmse.columns
 
@@ -29,7 +31,7 @@ without_splits=best_rmse.filter(regex='^(?!split)', axis=1) # create dataframe a
 
 without_splits=without_splits.drop([12,24,36,48], axis=0)
 
-without_splits.to_csv('results_best_rmse.csv')
+without_splits.to_csv('results_best_rmse_without_10.csv')
 
 
 

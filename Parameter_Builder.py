@@ -65,7 +65,7 @@ def lasso_param_dict(name='classify', estimators=[Lasso()], n_samples=100, m_fea
 def SVR_param_dict(name='classify', estimators=[SVR()], n_samples=100, m_features=15):
     dict={
         name: estimators,
-        name + '__' + 'C': [1, 10, 100, 500, 1000],
+        name + '__' + 'C': [0.1, 0.5, 1, 10, 100, 500, 1000],
         name + '__' + 'kernel': ['linear', 'rbf']
     }
     return (dict)

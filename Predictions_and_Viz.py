@@ -5,6 +5,14 @@ from sklearn.preprocessing import StandardScaler
 
 data=pd.read_csv('Aripiprazol.csv')
 
+
+
+import seaborn as sns
+sns.set(color_codes=True)
+g = sns.clustermap(data)
+
+
+
 def read_model(name, feature_set):
     path='Models/'+name+feature_set+'.pkl'
     print(path)
