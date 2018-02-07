@@ -105,7 +105,7 @@ def ann_param_dict(name='classify', estimators=[MLPRegressor()], n_samples=100, 
         name: estimators,
         name + '__' + 'learning_rate': ['constant'],
         name + '__' + 'momentum': [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
-        name + '__' + 'max_iter': [50000],
+        name + '__' + 'max_iter': [100000],
         name + '__' + 'hidden_layer_sizes': nn_size(m_features)
     }
     return (dict)
