@@ -7,11 +7,12 @@ from sklearn.linear_model import Lasso
 from sklearn.svm import SVR
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import mutual_info_
+from sklearn.feature_selection import mutual_info_regression
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import Ridge
+
 
 
 def n_features_range(n_samples=100, m_features=3, m_n_ratio=1):
@@ -105,7 +106,7 @@ def ann_param_dict(name='classify', estimators=[MLPRegressor()], n_samples=100, 
         name: estimators,
         name + '__' + 'learning_rate': ['constant'],
         name + '__' + 'momentum': [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
-        name + '__' + 'max_iter': [50000],
+        name + '__' + 'max_iter': [100000],
         name + '__' + 'hidden_layer_sizes': nn_size(m_features)
     }
     return (dict)
@@ -146,7 +147,7 @@ def create_params_pca_nmf(name='reduce_dim', reducers=[PCA(), NMF()], n_samples=
     return (params)
 
 
-def create_params_k_best(name='reduce_dim', reducers=[SelectKBest()], n_samples=100, m_features=[5, 10, 15, 20, 25, 30], funcs=[]):
+def create_params_k_best(name='reduce_dim', reducers=[SelectKBest(score_func=mutual_info_regression)], n_samples=100, m_features=[5, 10, 15, 20, 25, 30], funcs=[]):
     params=[]
     for func in funcs:
         for m in m_features:
