@@ -147,7 +147,7 @@ def create_params_pca_nmf(name='reduce_dim', reducers=[PCA(), NMF()], n_samples=
     return (params)
 
 
-def create_params_k_best(name='reduce_dim', reducers=[SelectKBest(score_func=mutual_info_regression)], n_samples=100, m_features=[5, 10, 15, 20, 25, 30], funcs=[]):
+def create_params_k_best(name='reduce_dim', reducers=[SelectKBest(score_func=mutual_info_regression )], n_samples=100, m_features=[5, 10, 15, 20, 25, 30], funcs=[]):
     params=[]
     for func in funcs:
         for m in m_features:
