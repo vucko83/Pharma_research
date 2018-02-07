@@ -1,12 +1,7 @@
 import pandas as pd
-df=pd.read_csv('test_results_without_10.csv')
+df=pd.read_csv('test_results_new_log.csv')
 df.shape
 
-df.columns[:20]
-
-df.dtypes
-
-df.param_classify[:5]
 
 
 df.param_classify.str.split(pat='(')[0]
@@ -24,7 +19,9 @@ best_rmse.shape
 
 
 
-best_rmse.to_csv('results_best_rmse.csv')
+
+
+best_rmse.to_csv('new_results_log.csv')
 best_rmse.columns
 
 without_splits=best_rmse.filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits

@@ -40,14 +40,19 @@ data=pd.read_csv('Aripiprazol_2.csv')
 #data=data[data.k<10]
 X,y, n_samples, m_features=prepare_data(data)
 
+
+
 scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
 grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, y)
 df=pd.DataFrame(grid.cv_results_)
+print('done')
 df.to_csv('test_results_new.csv')
 
 grid2 = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=params_dicts_all, return_train_score=True)
 grid2.fit(X, np.log(y))
+
+
 
 df2=pd.DataFrame(grid2.cv_results_)
 df2.to_csv('test_results_new_log.csv')
