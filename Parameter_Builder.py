@@ -123,7 +123,7 @@ def lr_param_dict(name='classify', estimators=[LinearRegression()], n_samples=10
 def ridge_param_dict(name='classify', estimators=[Ridge()], n_samples=100, m_features=15):
     dict={
         name: estimators,
-        name + '__' + 'alpha': [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
+        name + '__' + 'alpha': [0.01, 0.03, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9],
         name + '__' + 'max_iter': [100000]
     }
     return (dict)
