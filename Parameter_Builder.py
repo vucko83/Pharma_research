@@ -163,3 +163,14 @@ def create_params_k_best(name='reduce_dim', reducers=[SelectKBest(score_func=mut
 
 params_dicts=create_params_pca_nmf(funcs=algorithms)
 params_dicts_all=params_dicts+create_params_k_best(funcs=algorithms)
+
+
+'''
+Create parameters for each feature selection and each algorithm
+'''
+for func in algorithms:
+    create_params_pca_nmf(name='reduce_dim', reducers=[PCA()], n_samples=100,
+                              m_features=[5, 10, 15, 20, 25, 30], funcs=[func])
+    create_params_pca_nmf(name='reduce_dim', reducers=[NMF()], n_samples=100,
+                          m_features=[5, 10, 15, 20, 25, 30], funcs=[func])
+

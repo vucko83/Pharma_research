@@ -33,12 +33,24 @@ def prepare_data(data):
 Starting from log file provided by 
 '''
 
+df.columns
+
 
 '''
 extract the name of the algorithm
 '''
 df.param_classify.str.split(pat='(')[0]
 df['Algorithm']=df.param_classify.map(lambda x: x.split('(')[0])
+
+'''
+Filter performances about splits (within cross validation)
+'''
+df=df.filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
+df=df.filter(regex='^(?!Unnamed)', axis=1)
+#without_splits=without_splits.drop([12,24,36,48], axis=0) # If needed drop duplicate algorithms (that have the same RMSE)
+#without_splits.to_csv('results_best_rmse_without_10.csv') # if needed store reduced set to csv
+
+df['param_reduce_dim']
 
 '''
 Group by RMSE and select Algorithms with max RMSE
@@ -50,13 +62,6 @@ best_rmse.columns # check columns
 best_rmse.shape # check shape
 best_rmse.to_csv('new_results_log.csv') # store log with best algorithms by RMSE
 
-'''
-Filter performances about splits (within cross validation)
-'''
-without_splits=best_rmse.filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
-without_splits=without_splits.filter(regex='^(?!Unnamed)', axis=1)
-#without_splits=without_splits.drop([12,24,36,48], axis=0) # If needed drop duplicate algorithms (that have the same RMSE)
-#without_splits.to_csv('results_best_rmse_without_10.csv') # if needed store reduced set to csv
 
 
 '''
