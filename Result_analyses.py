@@ -32,16 +32,75 @@ def prepare_data(data):
 '''
 Starting from log file provided by 
 '''
+df.columns
+'''
+Filter performances about splits (within cross validation)
+'''
+df=df.filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
+df=df.filter(regex='^(?!Unnamed)', axis=1)
+df=df.filter(regex='^(?!std)', axis=1)
+df=df.filter(regex='^(?!rank)', axis=1)
+
+df.to_csv('New_all_results.csv')
+
+df['param_reduce_dim'].unique()
 
 
+a=df['params'][0]
+
+
+pipe = Pipeline([
+    ('normalize', MinMaxScaler()),
+    ('reduce_dim', PCA()),
+    ('classify', Lasso())
+])
+
+
+df.dtypes
+import ast
+ast.literal_eval(a)
+eval(a)
+a.replace("\"",'')
+a.replace("'",'').replace('"','')
+a.replace("'","")
+b=eval(a)
+
+dict(a.replace("'",""))
+scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
+cross_val_predict(Lasso(), X,y, cv=10, n_jobs=2, fit_params={'max_iter' :1000})
+Lasso()
+cross_val_predict()
+
+pipe1=Pipeline(**b)
+
+type(b)
+from sklearn.model_selection import GridSearchCV
+GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=[b], return_train_score=True)
+type(b['reduce_dim__n_components'])
 '''
 extract the name of the algorithm
 '''
-df.param_classify.str.split(pat='(')[0]
+#df.param_classify.str.split(pat='(')[0] #testing of split
 df['Algorithm']=df.param_classify.map(lambda x: x.split('(')[0])
+df['Feature_Selection']=df.param_reduce_dim.map(lambda x: x.split('(')[0])
+df.head()
 
 '''
-Group by RMSE and select Algorithms with max RMSE
+Group by RMSE and select Algorithms with max RMSE 
+!!!! By  Feature Selection and algorithm
+'''
+rmse_set=df.groupby(by=[df.Feature_Selection, df.Algorithm])['mean_test_neg_mean_squared_error'].agg('max') # group by algorithm name and aggregate on max
+
+idx = df.groupby(['Feature_Selection','Algorithm'])['mean_test_neg_mean_squared_error'].transform(max) == df['mean_test_neg_mean_squared_error'] #Indices for best RMSE
+best_rmse=df[idx]
+
+best_rmse.to_csv('24_new_results_log.csv')
+
+best_rmse[['Feature_Selection', 'Algorithm']]
+best_rmse.columnsre
+
+'''
+Group by RMSE and select Algorithms with max RMSE !!!! By algorithm
 '''
 rmse_set=df.groupby(by=df.Algorithm)['mean_test_neg_mean_squared_error'].agg('max') # group by algorithm name and aggregate on max
 idx = df.groupby(['Algorithm'])['mean_test_neg_mean_squared_error'].transform(max) == df['mean_test_neg_mean_squared_error'] #Indices for best RMSE
@@ -50,11 +109,6 @@ best_rmse.columns # check columns
 best_rmse.shape # check shape
 best_rmse.to_csv('new_results_log.csv') # store log with best algorithms by RMSE
 
-'''
-Filter performances about splits (within cross validation)
-'''
-without_splits=best_rmse.filter(regex='^(?!split)', axis=1) # create dataframe and filter results from splits
-without_splits=without_splits.filter(regex='^(?!Unnamed)', axis=1)
 #without_splits=without_splits.drop([12,24,36,48], axis=0) # If needed drop duplicate algorithms (that have the same RMSE)
 #without_splits.to_csv('results_best_rmse_without_10.csv') # if needed store reduced set to csv
 
@@ -238,7 +292,7 @@ g=g.map(plt.scatter)
 sns.set()
 b = sns.regplot(x="y", y="GBT", data=df_predictions,
                  x_estimator=np.mean)
-ax
+
 
 
 #https://seaborn.pydata.org/generated/seaborn.regplot.html
@@ -247,7 +301,7 @@ g = sns.JointGrid(x="y", y="SVR", data=df_predictions, space=0)
 g = g.plot_joint(sns.kdeplot, cmap="Blues_d")
 g = g.plot_marginals(sns.kdeplot, shade=True)
 
-g.
+
 
 '''
 pipe = Pipeline([

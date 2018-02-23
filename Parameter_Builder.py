@@ -130,7 +130,7 @@ def ridge_param_dict(name='classify', estimators=[Ridge()], n_samples=100, m_fea
 
 
 
-algorithms=[lasso_param_dict, SVR_param_dict, rf_param_dict, gbt_param_dict, knn_param_dict, ann_param_dict, lr_param_dict, ridge_param_dict]
+algorithms={'Lasso':lasso_param_dict, 'SVR':SVR_param_dict, 'RF':rf_param_dict, 'GBT':gbt_param_dict, 'K_NN':knn_param_dict, 'ANN':ann_param_dict, 'LR':lr_param_dict, 'Ridge':ridge_param_dict}
 
 def create_params_pca_nmf(name='reduce_dim', reducers=[PCA(), NMF()], n_samples=100, m_features=[5, 10, 15, 20, 25, 30], funcs=[]):
     params=[]
@@ -168,9 +168,10 @@ params_dicts_all=params_dicts+create_params_k_best(funcs=algorithms)
 '''
 Create parameters for each feature selection and each algorithm
 '''
-for func in algorithms:
+for name, func in algorithms.items:
     create_params_pca_nmf(name='reduce_dim', reducers=[PCA()], n_samples=100,
                               m_features=[5, 10, 15, 20, 25, 30], funcs=[func])
     create_params_pca_nmf(name='reduce_dim', reducers=[NMF()], n_samples=100,
                           m_features=[5, 10, 15, 20, 25, 30], funcs=[func])
-
+    create_params_k_best(name='reduce_dim', reducers=[SelectKBest(score_func=mutual_info_regression)], n_samples=100,
+                         m_features=[5, 10, 15, 20, 25, 30], funcs=[])
