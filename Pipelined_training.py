@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_selection import f_regression
 from sklearn.feature_selection import mutual_info_regression
+from sklearn.linear_model import Lasso
 
 
 
@@ -44,18 +45,11 @@ X,y, n_samples, m_features=prepare_data(data)
 
 
 scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
-grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=params_dicts_all, return_train_score=True)
+grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=2, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, np.log(y))
+
+
 df=pd.DataFrame(grid.cv_results_)
 df.to_csv('test_results_new_log.csv')
 
-
-'''
-X.describe()
-grid.best_estimator_
-from sklearn.model_selection import cross_val_predict
-from sklearn.model_selection import cross_val_score
-np.average(cross_val_score(grid.best_estimator_,X,y=y,scoring='r2', n_jobs=4, cv=5))
-
-
-'''
+grid.cv_results_['params']

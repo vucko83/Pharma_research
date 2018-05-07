@@ -1,6 +1,5 @@
 import pandas as pd
-
-data=pd.read_csv('Aripiprazol.csv')
+data=pd.read_csv('Aripiprazol_2.csv')
 
 data.columns
 
