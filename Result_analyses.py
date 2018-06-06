@@ -296,7 +296,7 @@ b = sns.regplot(x="y", y="GBT", data=df_predictions,
 
 
 #https://seaborn.pydata.org/generated/seaborn.regplot.html
-#https://seaborn.pydata.org/generated/seaborn.JointGrid.html#seaborn.JointGrid
+#https://seaborn.pydata.org/geneßrated/seaborn.JointGrid.html#seaborn.JointGrid
 g = sns.JointGrid(x="y", y="SVR", data=df_predictions, space=0)
 g = g.plot_joint(sns.kdeplot, cmap="Blues_d")
 g = g.plot_marginals(sns.kdeplot, shade=True)

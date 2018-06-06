@@ -48,8 +48,50 @@ scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absol
 grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=2, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, np.log(y))
 
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
+
+
+a=cross_val_score(grid.best_estimator_, X,y, cv=10, n_jobs=2)
+
+b=cross_val_predict(grid.best_estimator_, X,np.log(y), cv=10, n_jobs=2)
+
+y_hat_exp=np.exp(b)
+r2_score(y,y_hat_exp)
+
+
+grid.best_estimator_.named_steps['reduce_dim'].get_support()
+
+grid.best_estimator_.named_steps['classify']
+
+'''
+pickle grid
+'''
 
 df=pd.DataFrame(grid.cv_results_)
-df.to_csv('test_results_new_log.csv')
+
+
+
+df.to_csv('Results/test_results_K_Best_Mutual.csv')
 
 grid.cv_results_['params']
+
+grid.cv_results_
+
+
+from sklearn.linear_model import LinearRegression
+import numpy as np
+
+
+def score_reg(X, y):
+    LR = LinearRegression()
+    model = LR.fit(X, y)
+    return (np.abs(model.coef_))
+
+
+from sklearn.feature_selection import SelectKBest
+
+a = SelectKBest(score_func=score_reg, k=5).fit(X, y)
+
+reduced = a.transform(X)
+reduced.shape

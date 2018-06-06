@@ -13,12 +13,14 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import cross_val_predict
 from matplotlib import pyplot as plt
 from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
 np.set_printoptions(suppress=True)
 
 y_hat=cross_val_predict(grid, pd.DataFrame(X), np.log(y), cv=10)
 
 y_hat_exp=np.exp(y_hat)
 r2_score(y,y_hat_exp)
+np.sqrt(mean_squared_error(y,y_hat_exp))
 
 y_hat_exp
 
