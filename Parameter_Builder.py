@@ -12,7 +12,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import Ridge
-
+from sklearn.feature_selection import f_regression
 
 
 def n_features_range(n_samples=100, m_features=3, m_n_ratio=1):
@@ -135,11 +135,11 @@ def ridge_param_dict(name='classify', estimators=[Ridge()], n_samples=100, m_fea
 
 
 
-algorithms={'Lasso':lasso_param_dict, 'SVR':SVR_param_dict, 'RF':rf_param_dict, 'GBT':gbt_param_dict, 'K_NN':knn_param_dict, 'ANN':ann_param_dict, 'LR':lr_param_dict, 'Ridge':ridge_param_dict}
+#algorithms={'Lasso':lasso_param_dict, 'SVR':SVR_param_dict, 'RF':rf_param_dict, 'GBT':gbt_param_dict, 'K_NN':knn_param_dict, 'ANN':ann_param_dict, 'LR':lr_param_dict, 'Ridge':ridge_param_dict}
 
-#algorithms={'Lasso':lasso_param_dict, 'LR':lr_param_dict}
+#algorithms={'RF':rf_param_dict}
 
-#algorithms=[lasso_param_dict, lr_param_dict]
+algorithms={'Lasso':lasso_param_dict, 'LR':lr_param_dict }
 
 
 
@@ -186,7 +186,7 @@ def create_params_k_best_f(name='reduce_dim', reducers=[SelectKBest(score_func=f
 
 
 
-def create_params_select_from_model(name='reduce_dim', reducers=[SelectKBest(score_func=mutual_info_regression ), SelectKBest(score_func=f_regression)], n_samples=100, m_features=[5, 10, 15, 20, 25, 30], funcs=[]):
+def create_params_select_from_model(name='reduce_dim', reducers=[SelectKBest(score_func=LinearRegression)], n_samples=100, m_features=[5, 10, 15, 20, 25, 30], funcs=[]):
     params=[]
     for func in funcs.values(): #promenila da bude .values()
         for m in m_features:
@@ -201,10 +201,14 @@ def create_params_select_from_model(name='reduce_dim', reducers=[SelectKBest(sco
 
 
 
+'''
+Add other feature selections
+'''
 
 
 
-params_dicts_all=create_params_k_best_mutual(funcs=algorithms)
+
+params_dicts_all=create_params_select_from_model(funcs=algorithms)
 
 
 

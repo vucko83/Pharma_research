@@ -7,8 +7,6 @@ from sklearn.feature_selection import f_regression
 from sklearn.feature_selection import mutual_info_regression
 from sklearn.linear_model import Lasso
 
-
-
 #http://scikit-learn.org/stable/modules/pipeline.html
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,6 +19,15 @@ from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
+
+'''
+Metrics
+'''
+
+import numpy as np
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
+from sklearn.metrics import mean_squared_error
 
 
 
@@ -42,16 +49,43 @@ data=pd.read_csv('Aripiprazol_2.csv')
 #data=data[data.k<10]
 X,y, n_samples, m_features=prepare_data(data)
 
+'''
+Scoring functions
+'''
+
+from sklearn.metrics import make_scorer
+
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import median_absolute_error
+from sklearn.metrics import explained_variance_score
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_log_error
 
 
-scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
-grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=2, param_grid=params_dicts_all, return_train_score=True)
+
+def unlog(y, y_pred, measure):
+    y_original = np.exp(y)
+    y_pred_original = np.exp(y_pred)
+
+    score = measure(y_original, y_pred_original)
+    return (score)
+
+scoring = {
+    'R2': make_scorer(unlog, measure=r2_score ,greater_is_better = True),
+    'Explained_Variance': make_scorer(unlog, measure=explained_variance_score, greater_is_better = True),
+    'MAE': make_scorer(unlog, measure=mean_absolute_error ,greater_is_better = False),
+    'MSE': make_scorer(unlog, measure=mean_squared_error ,greater_is_better = False),
+    'MSLE': make_scorer(unlog, measure=mean_squared_log_error ,greater_is_better = False),
+    'Median_AE': make_scorer(unlog, measure=median_absolute_error ,greater_is_better = False)
+}
+
+grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit='MSE', n_jobs=2, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, np.log(y))
 
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import cross_val_predict
+max(grid.cv_results_['mean_test_R2'])
 
-
+'''
 a=cross_val_score(grid.best_estimator_, X,y, cv=10, n_jobs=2)
 
 b=cross_val_predict(grid.best_estimator_, X,np.log(y), cv=10, n_jobs=2)
@@ -64,9 +98,6 @@ grid.best_estimator_.named_steps['reduce_dim'].get_support()
 
 grid.best_estimator_.named_steps['classify']
 
-'''
-pickle grid
-'''
 
 df=pd.DataFrame(grid.cv_results_)
 
@@ -95,3 +126,11 @@ a = SelectKBest(score_func=score_reg, k=5).fit(X, y)
 
 reduced = a.transform(X)
 reduced.shape
+
+'''
+
+'''
+
+
+'''
+
