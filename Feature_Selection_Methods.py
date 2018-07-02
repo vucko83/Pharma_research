@@ -1,4 +1,22 @@
 
+import pandas as pd
+from skrebate import ReliefF
+import numpy as np
+
+
+df=pd.read_csv('Aripiprazol_2.csv')
+
+X = df.iloc[:, :-1]
+y=df.iloc[:,-1]
+df.shape
+X.shape
+
+X_ = np.array(X)
+
+ReliefF(n_features_to_select=5, n_neighbors=3).fit(X_, y)
+
+
+
 
 '''
 

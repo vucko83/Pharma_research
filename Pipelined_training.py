@@ -36,7 +36,7 @@ def prepare_data(data):
     X=data.iloc[:,:-1] # input data
     n_samples = X.shape[0]
     m_features = X.shape[1]
-    return (X, Y, n_samples, m_features)
+    return (np.array(X), np.array(Y), n_samples, m_features)
 
 
 pipe = Pipeline([
@@ -48,6 +48,8 @@ pipe = Pipeline([
 data=pd.read_csv('Aripiprazol_2.csv')
 #data=data[data.k<10]
 X,y, n_samples, m_features=prepare_data(data)
+
+
 
 '''
 Scoring functions
@@ -65,6 +67,7 @@ from sklearn.metrics import mean_squared_log_error
 
 
 def unlog(y, y_pred, measure):
+
     y_original = np.exp(y)
     y_pred_original = np.exp(y_pred)
 
@@ -80,10 +83,12 @@ scoring = {
     'Median_AE': make_scorer(unlog, measure=median_absolute_error ,greater_is_better = False)
 }
 
-grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit='MSE', n_jobs=2, param_grid=params_dicts_all, return_train_score=True)
+grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit='MSE', n_jobs=4, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, np.log(y))
 
-max(grid.cv_results_['mean_test_R2'])
+print(max(grid.cv_results_['mean_test_R2']))
+
+
 
 '''
 a=cross_val_score(grid.best_estimator_, X,y, cv=10, n_jobs=2)
@@ -126,11 +131,6 @@ a = SelectKBest(score_func=score_reg, k=5).fit(X, y)
 
 reduced = a.transform(X)
 reduced.shape
-
-'''
-
-'''
-
 
 '''
 
