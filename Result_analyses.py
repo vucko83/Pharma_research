@@ -18,7 +18,7 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_val_score
 
 
-df=pd.read_csv('test_results_new_log.csv')
+df=pd.read_csv('Last_results_v1.csv')
 df.shape
 
 
@@ -41,49 +41,21 @@ df=df.filter(regex='^(?!Unnamed)', axis=1)
 df=df.filter(regex='^(?!std)', axis=1)
 df=df.filter(regex='^(?!rank)', axis=1)
 
-df.to_csv('New_all_results.csv')
+df.columns
 
-df['param_reduce_dim'].unique()
-
-
-a=df['params'][0]
+df.to_csv('Last_results_reduced.csv')
 
 
-pipe = Pipeline([
-    ('normalize', MinMaxScaler()),
-    ('reduce_dim', PCA()),
-    ('classify', Lasso())
-])
-
-
-df.dtypes
-import ast
-ast.literal_eval(a)
-eval(a)
-a.replace("\"",'')
-a.replace("'",'').replace('"','')
-a.replace("'","")
-b=eval(a)
-
-dict(a.replace("'",""))
-scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
-cross_val_predict(Lasso(), X,y, cv=10, n_jobs=2, fit_params={'max_iter' :1000})
-Lasso()
-cross_val_predict()
-
-pipe1=Pipeline(**b)
-
-type(b)
-from sklearn.model_selection import GridSearchCV
-GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=[b], return_train_score=True)
-type(b['reduce_dim__n_components'])
 '''
 extract the name of the algorithm
 '''
 #df.param_classify.str.split(pat='(')[0] #testing of split
 df['Algorithm']=df.param_classify.map(lambda x: x.split('(')[0])
 df['Feature_Selection']=df.param_reduce_dim.map(lambda x: x.split('(')[0])
-df.head()
+df.head(100)
+
+pd.unique(df['Feature_Selection'])
+
 
 '''
 Group by RMSE and select Algorithms with max RMSE 
@@ -315,6 +287,45 @@ r2_score(y,y_hat)
 
 '''
 
+
+
+'''
+df['param_reduce_dim'].unique()
+
+
+a=df['params'][0]
+
+
+pipe = Pipeline([
+    ('normalize', MinMaxScaler()),
+    ('reduce_dim', PCA()),
+    ('classify', Lasso())
+])
+
+
+df.dtypes
+
+import ast
+ast.literal_eval(a)
+eval(a)
+a.replace("\"",'')
+a.replace("'",'').replace('"','')
+a.replace("'","")
+b=eval(a)
+
+dict(a.replace("'",""))
+scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
+cross_val_predict(Lasso(), X,y, cv=10, n_jobs=2, fit_params={'max_iter' :1000})
+Lasso()
+cross_val_predict()
+
+pipe1=Pipeline(**b)
+
+type(b)
+from sklearn.model_selection import GridSearchCV
+GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_grid=[b], return_train_score=True)
+type(b['reduce_dim__n_components'])
+'''
 
 
 
