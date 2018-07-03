@@ -64,8 +64,6 @@ from sklearn.metrics import explained_variance_score
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_log_error
 
-
-
 def unlog(y, y_pred, measure):
 
     y_original = np.exp(y)
@@ -86,8 +84,48 @@ scoring = {
 grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit='MSE', n_jobs=4, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, np.log(y))
 
-print(max(grid.cv_results_['mean_test_R2']))
 
+'''
+Store results to .csv
+'''
+pd_results = pd.DataFrame (grid.cv_results_)
+
+
+pd_results.to_csv('Last_results_v0.csv')
+
+
+a=pd.read_csv('Last_results_v0.csv')
+
+a['mean_test_MSE']=(np.sqrt(abs(a['mean_test_MSE'])))
+
+a.to_csv('Last_results_v1.csv')
+
+
+np.min(a['mean_test_MSE'])
+np.max(a['mean_test_R2'])
+
+a[['mean_test_R2', 'mean_test_MSE']].sort_values(by=['mean_test_MSE'], ascending=True).head(n=5)
+
+a[['mean_test_R2', 'mean_test_MSE']].sort_values(by=['mean_test_R2'], ascending=False ).head(n=5)
+
+
+
+
+features=a.columns
+len(features)
+a.columns[2:5]
+
+
+
+features
+
+
+
+pd_results['mean_test_MSE'] =
+
+
+print(max(grid.cv_results_['mean_test_R2']))
+print(max(grid.cv_results_['mean_test_MSE']))
 
 
 '''

@@ -98,7 +98,8 @@ def gbt_param_dict(name='classify', estimators=[GradientBoostingRegressor()], n_
         name + '__' + 'n_estimators': range(10, 101, 20),
         name + '__' + 'max_features': n_features_range(n_samples, m_features),
         name + '__' + 'min_samples_leaf': np.arange(0.01, 0.03, 0.05),
-        name + '__' + 'max_depth': range(2, 11, 2)
+        name + '__' + 'max_depth': range(2, 11, 2),
+        name + '__' + 'learning_rate': [0.01, 0.03, 0.05, 0.1]
     }
     return (dict)
 
@@ -140,11 +141,11 @@ def ridge_param_dict(name='classify', estimators=[Ridge()], n_samples=100, m_fea
 
 
 
-#algorithms={'Lasso':lasso_param_dict, 'SVR':SVR_param_dict, 'RF':rf_param_dict, 'GBT':gbt_param_dict, 'K_NN':knn_param_dict, 'ANN':ann_param_dict, 'LR':lr_param_dict, 'Ridge':ridge_param_dict}
+algorithms={'Lasso':lasso_param_dict, 'SVR':SVR_param_dict, 'RF':rf_param_dict, 'GBT':gbt_param_dict, 'K_NN':knn_param_dict, 'ANN':ann_param_dict, 'LR':lr_param_dict, 'Ridge':ridge_param_dict}
 
 #algorithms={'RF':rf_param_dict}
 
-algorithms={'LR':lr_param_dict, 'Lasso':lasso_param_dict }
+#algorithms={'LR':lr_param_dict, 'Lasso':lasso_param_dict }
 
 
 
