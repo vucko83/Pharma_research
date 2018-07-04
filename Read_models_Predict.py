@@ -33,7 +33,7 @@ grid.cv_results_['mean_train_r2']
 
 
 
-par=grid.cv_results_['params'][0]
+par=grid.cv_results_['params']
 
 par_grid={key:[value] for key, value in par.items()}
 
@@ -44,7 +44,7 @@ a.best_estimator_.predict(X,y)
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_val_score
 
-par
+
 pipe1 = Pipeline([
     ('normalize',  MinMaxScaler()),
     ('reduce_dim', SelectKBest()),
@@ -52,14 +52,12 @@ pipe1 = Pipeline([
 ])
 
 
-pipe.get_params()
-
-pipe.set_params()
-
-a=GridSearchCV(pipe, cv=2, scoring=scoring, refit=scoring[0], n_jobs=2, param_grid=par_grid, return_train_score=True).fit(X,y)
 
 
-cross_val_score(a, X,y=y, scoring='r2', n_jobs=2,  cv=5)
+a=GridSearchCV(pipe1, cv=2, scoring=scoring, refit=scoring[0], n_jobs=2, param_grid=par_grid, return_train_score=True).fit(X,y)
+
+
+cross_val_score(a, X, y=y, scoring='r2', n_jobs=2,  cv=5, fit_params=eval(ms))
 
 cross_val_predict(a, X,y=y, n_jobs=2,  cv=5)
 

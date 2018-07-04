@@ -214,7 +214,7 @@ Add other feature selections
 
 params_dicts_all=create_params_pca_nmf(funcs=algorithms)+create_params_k_best(funcs=algorithms)+create_params_Relief(funcs=algorithms)
 
-params_dicts_all
+type(params_dicts_all[0])
 
 
 

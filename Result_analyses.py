@@ -21,6 +21,7 @@ from sklearn.model_selection import cross_val_score
 df=pd.read_csv('Last_results_v1.csv')
 df.shape
 
+data = pd.read_csv('Aripiprazol_2.csv')
 
 def prepare_data(data):
     Y=data.iloc[:,-1] # label
@@ -28,6 +29,10 @@ def prepare_data(data):
     n_samples = X.shape[0]
     m_features = X.shape[1]
     return (X, Y, n_samples, m_features)
+
+X, y, n_samples, m_features = prepare_data(data)
+
+X
 
 '''
 Starting from log file provided by 
@@ -46,6 +51,8 @@ df.columns
 df.to_csv('Last_results_reduced.csv')
 
 
+pd.unique(df['param_reduce_dim'])
+
 '''
 extract the name of the algorithm
 '''
@@ -61,12 +68,17 @@ pd.unique(df['Feature_Selection'])
 Group by RMSE and select Algorithms with max RMSE 
 !!!! By  Feature Selection and algorithm
 '''
-rmse_set=df.groupby(by=[df.Feature_Selection, df.Algorithm])['mean_test_neg_mean_squared_error'].agg('max') # group by algorithm name and aggregate on max
+rmse_set=df.groupby(by=[df.param_reduce_dim, df.Algorithm])['mean_test_MSE'].agg('min') # group by algorithm name and aggregate on max
 
-idx = df.groupby(['Feature_Selection','Algorithm'])['mean_test_neg_mean_squared_error'].transform(max) == df['mean_test_neg_mean_squared_error'] #Indices for best RMSE
+rmse_set
+
+
+idx = df.groupby(['param_reduce_dim','Algorithm'])['mean_test_MSE'].transform(min) == df['mean_test_MSE'] #Indices for best RMSE
 best_rmse=df[idx]
 
-best_rmse.to_csv('24_new_results_log.csv')
+best_rmse
+
+best_rmse.to_csv('24_Last_Results.csv')
 
 best_rmse[['Feature_Selection', 'Algorithm']]
 best_rmse.columnsre
@@ -83,6 +95,59 @@ best_rmse.to_csv('new_results_log.csv') # store log with best algorithms by RMSE
 
 #without_splits=without_splits.drop([12,24,36,48], axis=0) # If needed drop duplicate algorithms (that have the same RMSE)
 #without_splits.to_csv('results_best_rmse_without_10.csv') # if needed store reduced set to csv
+
+
+from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import cross_val_score
+
+
+par= best_rmse['params'].iloc[0]
+
+
+pipe1 = Pipeline([
+    ('reduce_dim', PCA()),
+    ('classify', Lasso())
+])
+
+
+import ast
+par
+
+par_1='\n'.join(' '.join(line.split()) for line in par.split("\n"))
+
+ast.literal_eval(ms)
+
+type(eval(ms))
+
+mystring = par.replace('\n', ' ').replace('\r', '')
+
+ms
+scoring
+
+
+fit_pars = eval(ms)
+type(fit_pars)
+
+model = GridSearchCV(estimator=pipe1,
+                    param_grid=[fit_pars],
+                    cv=2)
+
+cross_val_score(pipe1.set_params(**fit_pars), X=X, y=y, scoring=scoring['MSE'])
+
+fit_pars[]
+
+
+fit_pars['classify__alpha']
+
+X.shape
+y.shape
+
+b=GridSearchCV(pipe1, cv=2, scoring=scoring, refit=scoring['MSE'], n_jobs=2, param_grid=eval(ms), return_train_score=True).fit(X,np.log(y))
+
+a={1:eval(ms)}
+
+X.columns
+y.shape
 
 
 '''
@@ -123,7 +188,6 @@ scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absol
 data=pd.read_csv('Aripiprazol_2.csv')
 #data=data[data.k<10]
 X,y, n_samples, m_features=prepare_data(data)
-
 
 
 df_results=pd.DataFrame()
