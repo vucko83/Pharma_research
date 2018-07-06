@@ -19,7 +19,7 @@ from sklearn.model_selection import cross_val_score
 
 
 df=pd.read_csv('Last_results_v1.csv')
-df.shape
+
 
 data = pd.read_csv('Aripiprazol_2.csv')
 
@@ -32,12 +32,12 @@ def prepare_data(data):
 
 X, y, n_samples, m_features = prepare_data(data)
 
-X
+pipe1 = Pipeline([
+    ('reduce_dim', PCA()),
+    ('classify', Lasso())
+])
 
-'''
-Starting from log file provided by 
-'''
-df.columns
+
 '''
 Filter performances about splits (within cross validation)
 '''
@@ -48,7 +48,7 @@ df=df.filter(regex='^(?!rank)', axis=1)
 
 df.columns
 
-df.to_csv('Last_results_reduced.csv')
+#df.to_csv('Last_results_reduced.csv')
 
 
 pd.unique(df['param_reduce_dim'])
@@ -58,11 +58,11 @@ extract the name of the algorithm
 '''
 #df.param_classify.str.split(pat='(')[0] #testing of split
 df['Algorithm']=df.param_classify.map(lambda x: x.split('(')[0])
-df['Feature_Selection']=df.param_reduce_dim.map(lambda x: x.split('(')[0])
-df.head(100)
 
-pd.unique(df['Feature_Selection'])
 
+#df['Feature_Selection']=df.param_reduce_dim.map(lambda x: x.split('(')[0])
+#df.head(100)
+#pd.unique(df['Feature_Selection'])
 
 '''
 Group by RMSE and select Algorithms with max RMSE 
@@ -70,115 +70,19 @@ Group by RMSE and select Algorithms with max RMSE
 '''
 rmse_set=df.groupby(by=[df.param_reduce_dim, df.Algorithm])['mean_test_MSE'].agg('min') # group by algorithm name and aggregate on max
 
-rmse_set
-
-
 idx = df.groupby(['param_reduce_dim','Algorithm'])['mean_test_MSE'].transform(min) == df['mean_test_MSE'] #Indices for best RMSE
 best_rmse=df[idx]
 
-best_rmse
-
-best_rmse.to_csv('24_Last_Results.csv')
-
-best_rmse[['Feature_Selection', 'Algorithm']]
-best_rmse.columnsre
-
-'''
-Group by RMSE and select Algorithms with max RMSE !!!! By algorithm
-'''
-rmse_set=df.groupby(by=df.Algorithm)['mean_test_neg_mean_squared_error'].agg('max') # group by algorithm name and aggregate on max
-idx = df.groupby(['Algorithm'])['mean_test_neg_mean_squared_error'].transform(max) == df['mean_test_neg_mean_squared_error'] #Indices for best RMSE
-best_rmse=df[idx]
-best_rmse.columns # check columns
-best_rmse.shape # check shape
-best_rmse.to_csv('new_results_log.csv') # store log with best algorithms by RMSE
-
-#without_splits=without_splits.drop([12,24,36,48], axis=0) # If needed drop duplicate algorithms (that have the same RMSE)
-#without_splits.to_csv('results_best_rmse_without_10.csv') # if needed store reduced set to csv
-
-
-from sklearn.model_selection import cross_val_predict
-from sklearn.model_selection import cross_val_score
-
+#Writing to .csv
+#best_rmse.to_csv('24_Last_Results.csv')
+#par_1='\n'.join(' '.join(line.split()) for line in par.split("\n"))
 
 par= best_rmse['params'].iloc[0]
-
-
-pipe1 = Pipeline([
-    ('reduce_dim', PCA()),
-    ('classify', Lasso())
-])
-
-
-import ast
-par
-
-par_1='\n'.join(' '.join(line.split()) for line in par.split("\n"))
-
-ast.literal_eval(ms)
-
-type(eval(ms))
-
-mystring = par.replace('\n', ' ').replace('\r', '')
-
-ms
-scoring
-
-
+ms = par.replace('\n', ' ').replace('\r', '')
 fit_pars = eval(ms)
-type(fit_pars)
-
-model = GridSearchCV(estimator=pipe1,
-                    param_grid=[fit_pars],
-                    cv=2)
-
-cross_val_score(pipe1.set_params(**fit_pars), X=X, y=y, scoring=scoring['MSE'])
-
-fit_pars[]
 
 
-fit_pars['classify__alpha']
-
-X.shape
-y.shape
-
-b=GridSearchCV(pipe1, cv=2, scoring=scoring, refit=scoring['MSE'], n_jobs=2, param_grid=eval(ms), return_train_score=True).fit(X,np.log(y))
-
-a={1:eval(ms)}
-
-X.columns
-y.shape
-
-
-'''
-Prepare dataframe mean_test_neg_mean_squared_error to RMSE etc
-'''
-df=df.filter(regex='^(?!Unnamed)', axis=1)
-df=df.filter(regex='^(?!split)', axis=1)
-df.columns
-df['mean_test_RMSE']=np.sqrt(-df.mean_test_neg_mean_squared_error)
-df=df.drop([1,2,3,4,10,11,12], axis=0)
-
-'''
-Read parameters and recreate models
-'''
-
-lasso={'name':'Lasso', 'algorithm':Lasso(alpha=0.01, max_iter=100000), 'features':PCA(n_components=10)}
-svr={'name':'SVR', 'algorithm':SVR(C=10, kernel='rbf'),'features':PCA(n_components=10)}
-rf={'name':'RF', 'algorithm':RandomForestRegressor(max_depth=10, max_features=22, min_samples_leaf=0.01, n_estimators=60), 'features':PCA(n_components=30)}
-ann={'name':'ANN','algorithm':MLPRegressor(learning_rate='constant', momentum=0.4, max_iter=50000, hidden_layer_sizes=(16,)), 'features':PCA(n_components=2)}
-lr={'name':'lr','algorithm':LinearRegression(), 'features':NMF(n_components=10)}
-ridge={'name':'ridge','algorithm':Ridge(alpha=0.01, max_iter=100000), 'features':PCA(n_components=15)}
-gbt={'name':'GBT', 'algorithm':GradientBoostingRegressor(max_depth=2, max_features=7, min_samples_leaf=0.01, n_estimators=90), 'features':SelectKBest(k=30, score_func=mutual_info_regression)}
-knn={'name':'K-nn','algorithm':KNeighborsRegressor(n_neighbors=4), 'features':SelectKBest(k=30)}
-
-
-
-from sklearn.metrics import r2_score
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import explained_variance_score
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import median_absolute_error
+cross_val_score(pipe1.set_params(**fit_pars), X=X, y=y, scoring=scoring)
 
 
 
@@ -187,10 +91,8 @@ scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absol
 
 data=pd.read_csv('Aripiprazol_2.csv')
 #data=data[data.k<10]
-X,y, n_samples, m_features=prepare_data(data)
 
 
-df_results=pd.DataFrame()
 '''
 Predictions
 '''
@@ -199,12 +101,7 @@ for set in setup:
     name = set['name']
     algorithm= set['algorithm']
     features = set['features']
-    pipe = Pipeline([
-        ('normalize', MinMaxScaler()),
-        ('reduce_dim', features),
-        ('classify', algorithm)
-    ])
-    y_hat = cross_val_predict(pipe, X, y, cv=10)
+    y_hat = cross_val_predict(pipe1, X, y, cv=10)
     predictions.update({name:y_hat})
 
 
@@ -391,11 +288,52 @@ GridSearchCV(pipe, cv=10, scoring=scoring, refit=scoring[0], n_jobs=4, param_gri
 type(b['reduce_dim__n_components'])
 '''
 
+'''
+#Group by RMSE and select Algorithms with max RMSE !!!! By algorithm
+
+rmse_set=df.groupby(by=df.Algorithm)['mean_test_neg_mean_squared_error'].agg('max') # group by algorithm name and aggregate on max
+idx = df.groupby(['Algorithm'])['mean_test_neg_mean_squared_error'].transform(max) == df['mean_test_neg_mean_squared_error'] #Indices for best RMSE
+best_rmse=df[idx]
+best_rmse.columns # check columns
+best_rmse.shape # check shape
+best_rmse.to_csv('new_results_log.csv') # store log with best algorithms by RMSE
+'''
+
+#without_splits=without_splits.drop([12,24,36,48], axis=0) # If needed drop duplicate algorithms (that have the same RMSE)
+#without_splits.to_csv('results_best_rmse_without_10.csv') # if needed store reduced set to csv
 
 
 
+'''
+Read parameters and recreate models
+
+
+lasso={'name':'Lasso', 'algorithm':Lasso(alpha=0.01, max_iter=100000), 'features':PCA(n_components=10)}
+svr={'name':'SVR', 'algorithm':SVR(C=10, kernel='rbf'),'features':PCA(n_components=10)}
+rf={'name':'RF', 'algorithm':RandomForestRegressor(max_depth=10, max_features=22, min_samples_leaf=0.01, n_estimators=60), 'features':PCA(n_components=30)}
+ann={'name':'ANN','algorithm':MLPRegressor(learning_rate='constant', momentum=0.4, max_iter=50000, hidden_layer_sizes=(16,)), 'features':PCA(n_components=2)}
+lr={'name':'lr','algorithm':LinearRegression(), 'features':NMF(n_components=10)}
+ridge={'name':'ridge','algorithm':Ridge(alpha=0.01, max_iter=100000), 'features':PCA(n_components=15)}
+gbt={'name':'GBT', 'algorithm':GradientBoostingRegressor(max_depth=2, max_features=7, min_samples_leaf=0.01, n_estimators=90), 'features':SelectKBest(k=30, score_func=mutual_info_regression)}
+knn={'name':'K-nn','algorithm':KNeighborsRegressor(n_neighbors=4), 'features':SelectKBest(k=30)}
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import explained_variance_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import median_absolute_error
+
+
+'''
 
 
 
+'''
+#Prepare dataframe mean_test_neg_mean_squared_error to RMSE etc
 
+df=df.filter(regex='^(?!Unnamed)', axis=1)
+df=df.filter(regex='^(?!split)', axis=1)
+df.columns
+df['mean_test_RMSE']=np.sqrt(-df.mean_test_neg_mean_squared_error)
+df=df.drop([1,2,3,4,10,11,12], axis=0)
+'''
 
