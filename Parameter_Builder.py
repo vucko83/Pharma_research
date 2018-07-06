@@ -81,6 +81,22 @@ def SVR_param_dict(name='classify', estimators=[SVR()], n_samples=100, m_feature
     }
     return (dict)
 
+
+'''
+Scaling, generalize this over more normalization techniques
+
+'''
+
+def scaler_param_dict(name='normalize', estimators=[MinMaxScaler()], n_samples=100, m_features=15):
+    dict={
+        name: estimators,
+        name + '__' + 'feature_range': [(0,1)],
+    }
+    return (dict)
+
+
+scaler_param_dict()
+
 def rf_param_dict(name='classify', estimators=[RandomForestRegressor()], n_samples=100, m_features=15):
     dict={
         name: estimators,
@@ -159,7 +175,7 @@ def create_params_pca_nmf(name='reduce_dim', reducers=[PCA(), NMF()], n_samples=
                 name+'__'+'n_components':[m]
             }
             dict.update(func(m_features=m))
-
+            dict.update(scaler_param_dict())
             params.append(dict.copy())
     return (params)
 
@@ -212,7 +228,9 @@ Add other feature selections
 
 #params_dicts_all=create_params_k_best_f(funcs=algorithms)
 
-params_dicts_all=create_params_pca_nmf(funcs=algorithms)+create_params_k_best(funcs=algorithms)+create_params_Relief(funcs=algorithms)
+#params_dicts_all=create_params_pca_nmf(funcs=algorithms)+create_params_k_best(funcs=algorithms)+create_params_Relief(funcs=algorithms)
+
+params_dicts_all=create_params_pca_nmf(funcs=algorithms)
 
 type(params_dicts_all[0])
 

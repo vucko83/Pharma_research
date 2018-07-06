@@ -77,17 +77,25 @@ best_rmse=df[idx]
 #best_rmse.to_csv('24_Last_Results.csv')
 #par_1='\n'.join(' '.join(line.split()) for line in par.split("\n"))
 
-par= best_rmse['params'].iloc[0]
+par= best_rmse['params'].iloc[25]
 ms = par.replace('\n', ' ').replace('\r', '')
 fit_pars = eval(ms)
 
+fit_pars=eval(par)
 
-cross_val_score(pipe1.set_params(**fit_pars), X=X, y=y, scoring=scoring)
+np.mean(cross_val_score(pipe1.set_params(**fit_pars), X=X, y=np.log(y), scoring=scoring['MSE'], cv=10))
+
+
+'score_func=<function lr_feature_scorer at 0x7fbcb6a5dd08>', 'score_func=lr_feature_scorer'
 
 
 
 setup =[lasso, svr, rf, ann, lr, ridge, gbt, knn]
 scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
+
+
+
+len(best_rmse['params'])
 
 data=pd.read_csv('Aripiprazol_2.csv')
 #data=data[data.k<10]

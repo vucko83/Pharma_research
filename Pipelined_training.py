@@ -81,7 +81,7 @@ scoring = {
     'Median_AE': make_scorer(unlog, measure=median_absolute_error ,greater_is_better = False)
 }
 
-grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit='R2', n_jobs=4, param_grid=params_dicts_all, return_train_score=True)
+grid = GridSearchCV(pipe, cv=10, scoring=scoring, refit='R2', n_jobs=2, param_grid=params_dicts_all, return_train_score=True)
 grid.fit(X, np.log(y))
 
 
