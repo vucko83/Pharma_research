@@ -33,6 +33,7 @@ def prepare_data(data):
 X, y, n_samples, m_features = prepare_data(data)
 
 pipe1 = Pipeline([
+    ('normalize',  MinMaxScaler()),
     ('reduce_dim', PCA()),
     ('classify', Lasso())
 ])
@@ -50,6 +51,7 @@ df.columns
 
 #df.to_csv('Last_results_reduced.csv')
 
+df.index
 
 pd.unique(df['param_reduce_dim'])
 
@@ -58,6 +60,7 @@ extract the name of the algorithm
 '''
 #df.param_classify.str.split(pat='(')[0] #testing of split
 df['Algorithm']=df.param_classify.map(lambda x: x.split('(')[0])
+df['row_num'] = df.index
 
 
 #df['Feature_Selection']=df.param_reduce_dim.map(lambda x: x.split('(')[0])
@@ -65,180 +68,133 @@ df['Algorithm']=df.param_classify.map(lambda x: x.split('(')[0])
 #pd.unique(df['Feature_Selection'])
 
 '''
-Group by RMSE and select Algorithms with max RMSE 
+Group by RMSE and select Algorithms with min RMSE 
 !!!! By  Feature Selection and algorithm
 '''
-rmse_set=df.groupby(by=[df.param_reduce_dim, df.Algorithm])['mean_test_MSE'].agg('min') # group by algorithm name and aggregate on max
+idxs=df.groupby(by=[df.param_reduce_dim, df.Algorithm])['mean_test_MSE'].idxmin()
 
-idx = df.groupby(['param_reduce_dim','Algorithm'])['mean_test_MSE'].transform(min) == df['mean_test_MSE'] #Indices for best RMSE
-best_rmse=df[idx]
+best_rmse = df.iloc[idxs]
+
+best_rmse.columns
 
 #Writing to .csv
 #best_rmse.to_csv('24_Last_Results.csv')
 #par_1='\n'.join(' '.join(line.split()) for line in par.split("\n"))
 
-par= best_rmse['params'].iloc[25]
-ms = par.replace('\n', ' ').replace('\r', '')
-fit_pars = eval(ms)
 
-fit_pars=eval(par)
-
-np.mean(cross_val_score(pipe1.set_params(**fit_pars), X=X, y=np.log(y), scoring=scoring['MSE'], cv=10))
-
-
-'score_func=<function lr_feature_scorer at 0x7fbcb6a5dd08>', 'score_func=lr_feature_scorer'
+params= best_rmse['params']
+rows = best_rmse['row_num']
 
 
 
-setup =[lasso, svr, rf, ann, lr, ridge, gbt, knn]
-scoring = ['neg_mean_squared_error', 'r2', 'explained_variance', 'neg_mean_absolute_error','neg_median_absolute_error']
+
+scoring = {
+    'R2': r2_score,
+    'Explained_Variance': explained_variance_score,
+    'MAE': mean_absolute_error,
+    'MSE': mean_squared_error,
+    'MSLE': mean_squared_log_error,
+    'Median_AE': median_absolute_error
+}
+
+result_dict={}
+ls=[]
+for par, row_num in zip(params, rows):
+    par=par.replace('score_func=<function lr_feature_scorer at 0x7fbcb6a5dd08>', 'score_func=lr_feature_scorer')
+    par=par.replace('score_func=<function mutual_info_regression at 0x7fbcb6d192f0>', 'score_func=mutual_info_regression')
+    par=par.replace('score_func=<function f_regression at 0x7fbcb6d0b378>', 'score_func=f_regression')
+    fit_par=eval(par)
+
+    #value=np.mean(np.sqrt(np.abs(cross_val_score(pipe1.set_params(**fit_par), X=X, y=np.log(y), scoring=scoring['R2'], cv=10))))
+    #value = np.mean(cross_val_score(pipe1.set_params(**fit_par), X=X, y=np.log(y), scoring=scoring['R2'], cv=8))
+    try:
+      y_hat = cross_val_predict(pipe1.set_params(**fit_par), X.values, np.log(y).values, cv=10)
+      #value = unlog_predict(y=y, y_pred=y_hat, measure=r2_score)
+      eval_dict={}
+      for name, eval_measure in scoring.items():
+         value = unlog_predict(y=y, y_pred=y_hat, measure=eval_measure)
+         eval_dict.update({'QOO_'+name:value}) 
+      eval_dict.update('row_num': row_num)
+
+      #result_dict.update({row_num:eval_dict})
+      print(value)
+    except:
+      print(None)
 
 
+panda=pd.DataFrame.from_dict(result_dict, orient='index').reset_index()
 
-len(best_rmse['params'])
+# Complete results - CV + QOO measures
+results_complete = pd.merge(panda1,best_rmse, left_on=['index'], right_on=['row_num'], how='inner' )
 
-data=pd.read_csv('Aripiprazol_2.csv')
-#data=data[data.k<10]
+results_complete.to_csv('results_complete.csv')
 
+
+#idxs=df.groupby(by=[res.param_reduce_dim, df.Algorithm])['mean_test_MSE'].idxmin()
 
 '''
-Predictions
+Plotting
 '''
-predictions={}
-for set in setup:
-    name = set['name']
-    algorithm= set['algorithm']
-    features = set['features']
-    y_hat = cross_val_predict(pipe1, X, y, cv=10)
-    predictions.update({name:y_hat})
-
-
-from sklearn.metrics import r2_score
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import explained_variance_score
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import median_absolute_error
-
-
-'''
-Validation
-'''
-res={}
-for name, pred in predictions.items():
-    rmse = np.sqrt(mean_squared_error(y, pred))
-    r2=r2_score(y, pred)
-    evs=explained_variance_score(y, pred)
-    mae=mean_absolute_error(y, pred)
-    med_ae=median_absolute_error(y, pred)
-    res.update({name:{'RMSE':rmse, 'r2':r2, 'EV':evs, 'MAE':mae, 'MED_AE':med_ae}})
-
-results=pd.DataFrame(res).transpose()
 
 import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots()
-ax.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
-ax.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
-ax.set_xlabel('Measured')
-ax.set_ylabel('Predicted')
-plt.title('')
-plt.show()
-
-'''
-Multiplots
-'''
-
-plt.figure(1)
-plt.subplot(211)
-plt.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
-plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
-plt.title('GBT')
-
-plt.subplot(212)
-plt.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
-plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
-plt.title('ANN')
-
-
-plt.subplot(213)
-plt.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
-plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
-plt.title('ANN')
-
-plt.subplot(214)
-plt.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
-plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
-plt.title('ANN')
-
-
-plt.show()
 import seaborn as sns
 
-#https://matplotlib.org/examples/pylab_examples/subplots_demo.html
 
-fig, axarr = plt.subplots(ncols=3, nrows=3)
-sns.regplot(x=y, y=predictions['SVR'], ax=axarr[0,0])
-sns.regplot(x=y, y=predictions['GBT'], ax=axarr[0,1])
-sns.regplot(x=y, y=predictions['RF'], ax=axarr[0,2])
-sns.regplot(x=y, y=predictions['ANN'], ax=axarr[1,0])
-sns.regplot(x=y, y=predictions['lr'], ax=axarr[1,1])
-sns.regplot(x=y, y=predictions['ridge'], ax=axarr[1,2])
-sns.regplot(x=y, y=predictions['Lasso'], ax=axarr[2,0])
-sns.regplot(x=y, y=predictions['K-nn'], ax=axarr[2,1])
+# Take overall best algorithms
+idx_for_plotting = results_complete.groupby(by = results_complete.Algorithm)['QOO_MSE'].idxmin()
+results_for_plotting = results_complete.iloc[idx_for_plotting]
 
+sns.set(color_codes=True)
+fig, axarr = plt.subplots(nrows=4, ncols=2)
+fig.tight_layout()
+coord_1=0
+coord_2=0
+#setup for plots if needed
+#subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None)
+for index, row in results_for_plotting.iterrows():
+    alg = row['Algorithm']
+    model = row['params']
+    par = model.replace('score_func=<function lr_feature_scorer at 0x7fbcb6a5dd08>', 'score_func=lr_feature_scorer')
+    par = model.replace('score_func=<function mutual_info_regression at 0x7fbcb6d192f0>',
+                        'score_func=mutual_info_regression')
+    par = model.replace('score_func=<function f_regression at 0x7fbcb6d0b378>', 'score_func=f_regression')
 
+    params = eval(par)
+    predictions = cross_val_predict(pipe1.set_params(**params), X.values, np.log(y).values, cv=10)
+    predictions_unlog = np.exp(predictions)
 
-lasso={'name':'Lasso', 'algorithm':Lasso(alpha=0.01, max_iter=100000), 'features':PCA(n_components=10)}
-svr={'name':'SVR', 'algorithm':SVR(C=10, kernel='rbf'),'features':PCA(n_components=10)}
-rf={'name':'RF', 'algorithm':RandomForestRegressor(max_depth=10, max_features=22, min_samples_leaf=0.01, n_estimators=60), 'features':PCA(n_components=30)}
-ann={'name':'ANN','algorithm':MLPRegressor(learning_rate='constant', momentum=0.4, max_iter=50000, hidden_layer_sizes=(16,)), 'features':PCA(n_components=2)}
-lr={'name':'lr','algorithm':LinearRegression(), 'features':NMF(n_components=10)}
-ridge={'name':'ridge','algorithm':Ridge(alpha=0.01, max_iter=100000), 'features':PCA(n_components=15)}
-gbt={'name':'GBT', 'algorithm':GradientBoostingRegressor(max_depth=2, max_features=7, min_samples_leaf=0.01, n_estimators=90), 'features':SelectKBest(k=30, score_func=mutual_info_regression)}
-knn={'name':'K-nn','algorithm':KNeighborsRegressor(n_neighbors=4), 'features':SelectKBest(k=30)}
+    current_plot = axarr[coord_1, coord_2]
 
-
-
-
-ax1.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
-
-
-
-ax1.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
-ax1.set_xlabel('Measured')
-ax1.set_ylabel('Predicted')
-plt.title('')
-
-ax2.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
-ax2.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
-ax2.set_xlabel('Measured')
-ax2.set_ylabel('Predicted')
-plt.title('')
-
-df_predictions=pd.DataFrame(predictions)
-df_predictions.columns
-df_predictions['y']=y
-df_predictions
-
-df_predictions.columns
+    current_plot.set_title(alg)
+    current_plot.set_xlabel('K - True')
+    current_plot.set_ylabel('K - Predicted')
+    current_plot.set_xlim([0, 16])
+    current_plot.set_ylim([0, 16])
 
 
-predictions
-g=sns.PairGrid(data,
-               x_vars=['ANN', 'GBT', 'K-nn', 'Lasso', 'RF', 'SVR', 'lr', 'ridge'],
-               y_vars=['y']
-               )
-g=g.map(plt.scatter)
+    sns.regplot(x=y, y=predictions_unlog, ax=axarr[coord_1, coord_2])
 
-sns.set()
-b = sns.regplot(x="y", y="GBT", data=df_predictions,
-                 x_estimator=np.mean)
+    # Update coordinates for plotting in grid
+    if coord_2 == 1:
+        coord_1+=1
+        coord_2=0
+    else:
+        coord_2+=1
+
+# Feature analyses
+for index, row in results_for_plotting.iterrows():
 
 
 
+
+'''
+This is Joint Grid, could be used, but cannot figure it yet 
+Probably store results in DataFrame and then plot with SNS
+
+'''
 #https://seaborn.pydata.org/generated/seaborn.regplot.html
 #https://seaborn.pydata.org/geneßrated/seaborn.JointGrid.html#seaborn.JointGrid
-g = sns.JointGrid(x="y", y="SVR", data=df_predictions, space=0)
+g = sns.JointGrid(x=y, y=predictions_unlog, space=0)
 g = g.plot_joint(sns.kdeplot, cmap="Blues_d")
 g = g.plot_marginals(sns.kdeplot, shade=True)
 
@@ -345,3 +301,147 @@ df['mean_test_RMSE']=np.sqrt(-df.mean_test_neg_mean_squared_error)
 df=df.drop([1,2,3,4,10,11,12], axis=0)
 '''
 
+'''
+def my_cv_eval(X, y, pipe, param, eval_function, cv=10):
+    kf = KFold(n_splits=cv)
+    fit_par=eval(param)
+
+    pp=pipe.set_params(**fit_par)
+
+    y_predicted = []
+    y_true = []
+
+    for train_index, test_index in kf.split(X):
+         #print("TRAIN:", train_index, "TEST:", test_index)
+         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+         y_train, y_test = y[train_index], y[test_index]
+         model = pp.fit(X_train, y_train)
+         predictions=model.predict(X_test)
+         y_predicted.extend(predictions)
+         y_true.extend(y_test)
+    score=1
+    #score = eval_function(y_true, y_predicted)
+    return(score)
+
+
+'''
+
+
+'''
+
+from sklearn.model_selection import KFold
+
+kf = KFold(n_splits=10)
+
+y_hat = cross_val_predict(a, X, np.log(y), cv=10)
+
+'''
+
+'''
+for index, row in results_for_plotting.iterrows():
+    print(index)
+
+sns.regplot(x=y, y=predictions['GBT'], ax=axarr[0,1])
+sns.regplot(x=y, y=predictions['RF'], ax=axarr[0,2])
+sns.regplot(x=y, y=predictions['ANN'], ax=axarr[1,0])
+sns.regplot(x=y, y=predictions['lr'], ax=axarr[1,1])
+sns.regplot(x=y, y=predictions['ridge'], ax=axarr[1,2])
+sns.regplot(x=y, y=predictions['Lasso'], ax=axarr[2,0])
+sns.regplot(x=y, y=predictions['K-nn'], ax=axarr[2,1])
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+ax.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
+ax.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
+ax.set_xlabel('Measured')
+ax.set_ylabel('Predicted')
+plt.title('')
+plt.show()
+
+plt.figure(1)
+plt.subplot(211)
+plt.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
+plt.title('GBT')
+
+plt.subplot(212)
+plt.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
+plt.title('ANN')
+
+
+plt.subplot(213)
+plt.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
+plt.title('ANN')
+
+plt.subplot(214)
+plt.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
+plt.title('ANN')
+
+
+plt.show()
+import seaborn as sns
+
+#https://matplotlib.org/examples/pylab_examples/subplots_demo.html
+
+fig, axarr = plt.subplots(ncols=3, nrows=3)
+sns.regplot(x=y, y=predictions['SVR'], ax=axarr[0,0])
+sns.regplot(x=y, y=predictions['GBT'], ax=axarr[0,1])
+sns.regplot(x=y, y=predictions['RF'], ax=axarr[0,2])
+sns.regplot(x=y, y=predictions['ANN'], ax=axarr[1,0])
+sns.regplot(x=y, y=predictions['lr'], ax=axarr[1,1])
+sns.regplot(x=y, y=predictions['ridge'], ax=axarr[1,2])
+sns.regplot(x=y, y=predictions['Lasso'], ax=axarr[2,0])
+sns.regplot(x=y, y=predictions['K-nn'], ax=axarr[2,1])
+
+
+
+lasso={'name':'Lasso', 'algorithm':Lasso(alpha=0.01, max_iter=100000), 'features':PCA(n_components=10)}
+svr={'name':'SVR', 'algorithm':SVR(C=10, kernel='rbf'),'features':PCA(n_components=10)}
+rf={'name':'RF', 'algorithm':RandomForestRegressor(max_depth=10, max_features=22, min_samples_leaf=0.01, n_estimators=60), 'features':PCA(n_components=30)}
+ann={'name':'ANN','algorithm':MLPRegressor(learning_rate='constant', momentum=0.4, max_iter=50000, hidden_layer_sizes=(16,)), 'features':PCA(n_components=2)}
+lr={'name':'lr','algorithm':LinearRegression(), 'features':NMF(n_components=10)}
+ridge={'name':'ridge','algorithm':Ridge(alpha=0.01, max_iter=100000), 'features':PCA(n_components=15)}
+gbt={'name':'GBT', 'algorithm':GradientBoostingRegressor(max_depth=2, max_features=7, min_samples_leaf=0.01, n_estimators=90), 'features':SelectKBest(k=30, score_func=mutual_info_regression)}
+knn={'name':'K-nn','algorithm':KNeighborsRegressor(n_neighbors=4), 'features':SelectKBest(k=30)}
+
+
+
+
+ax1.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
+
+
+
+ax1.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
+ax1.set_xlabel('Measured')
+ax1.set_ylabel('Predicted')
+plt.title('')
+
+ax2.scatter(y, predictions['GBT'], edgecolors=(0, 0, 0))
+ax2.plot([y.min(), y.max()], [y.min(), y.max()], 'k-', lw=2)
+ax2.set_xlabel('Measured')
+ax2.set_ylabel('Predicted')
+plt.title('')
+
+df_predictions=pd.DataFrame(predictions)
+df_predictions.columns
+df_predictions['y']=y
+df_predictions
+
+df_predictions.columns
+
+
+predictions
+g=sns.PairGrid(data,
+               x_vars=['ANN', 'GBT', 'K-nn', 'Lasso', 'RF', 'SVR', 'lr', 'ridge'],
+               y_vars=['y']
+               )
+g=g.map(plt.scatter)
+
+sns.set()
+b = sns.regplot(x="y", y="GBT", data=df_predictions,
+                 x_estimator=np.mean)
+
+'''

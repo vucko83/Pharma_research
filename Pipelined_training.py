@@ -72,6 +72,16 @@ def unlog(y, y_pred, measure):
     score = measure(y_original, y_pred_original)
     return (score)
 
+def unlog_predict(y, y_pred, measure):
+
+    y_original = y
+    y_pred_original = np.exp(y_pred)
+
+    score = measure(y_original, y_pred_original)
+    return (score)
+
+
+
 scoring = {
     'R2': make_scorer(unlog, measure=r2_score ,greater_is_better = True),
     'Explained_Variance': make_scorer(unlog, measure=explained_variance_score, greater_is_better = True),

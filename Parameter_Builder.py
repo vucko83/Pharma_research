@@ -14,10 +14,12 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import Ridge
 from sklearn.feature_selection import f_regression
 from sklearn.metrics import make_scorer
+from skrebate import ReliefF
+
 
 #from ReliefF import ReliefF
 
-from skrebate import ReliefF
+
 
 
 def n_features_range(n_samples=100, m_features=3, m_n_ratio=1):
