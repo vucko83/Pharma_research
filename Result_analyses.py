@@ -151,14 +151,18 @@ coord_1=0
 coord_2=0
 #setup for plots if needed
 #subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None)
+
 for index, row in results_for_plotting.iterrows():
     alg = row['Algorithm']
     model = row['params']
+
+    # Replace param  names of custom functions that are not generated as should
     par = model.replace('score_func=<function lr_feature_scorer at 0x7fbcb6a5dd08>', 'score_func=lr_feature_scorer')
     par = model.replace('score_func=<function mutual_info_regression at 0x7fbcb6d192f0>',
                         'score_func=mutual_info_regression')
     par = model.replace('score_func=<function f_regression at 0x7fbcb6d0b378>', 'score_func=f_regression')
 
+    # Create dict from params, predict and unlog predictions
     params = eval(par)
     predictions = cross_val_predict(pipe1.set_params(**params), X.values, np.log(y).values, cv=10)
     predictions_unlog = np.exp(predictions)
@@ -171,9 +175,7 @@ for index, row in results_for_plotting.iterrows():
     current_plot.set_xlim([0, 16])
     current_plot.set_ylim([0, 16])
 
-
-    sns.regplot(x=y, y=predictions_unlog, ax=axarr[coord_1, coord_2])
-
+    #sns.regplot(x=y, y=predictions_unlog, ax=axarr[coord_1, coord_2])
     # Update coordinates for plotting in grid
     if coord_2 == 1:
         coord_1+=1
@@ -181,9 +183,41 @@ for index, row in results_for_plotting.iterrows():
     else:
         coord_2+=1
 
-# Feature analyses
-for index, row in results_for_plotting.iterrows():
 
+
+'''
+Feature analyses
+'''
+
+#for index, row in results_for_plotting.iterrows():
+
+row = results_for_plotting.iloc[5]
+model = row['params']
+par = model.replace('score_func=<function lr_feature_scorer at 0x7fbcb6a5dd08>', 'score_func=lr_feature_scorer')
+par = model.replace('score_func=<function mutual_info_regression at 0x7fbcb6d192f0>',
+                        'score_func=mutual_info_regression')
+par = model.replace('score_func=<function f_regression at 0x7fbcb6d0b378>', 'score_func=f_regression')
+
+params_fa = eval(par)
+
+pipe_for_fit = pipe1.set_params(**params_fa)
+pipe_fitted = pipe_for_fit.fit(X, np.log(y))
+print(pipe_fitted)
+a=pipe_fitted.named_steps['classify']
+
+
+sns.barplot(X.columns, a.feature_importances_)
+
+
+
+
+### Corelation ####
+sns.set(context="paper", font="monospace")
+corrmat = X.corr()
+f, ax = plt.subplots(figsize=(12, 9))
+
+# Draw the heatmap using seaborn
+sns.heatmap(corrmat)
 
 
 
@@ -191,6 +225,9 @@ for index, row in results_for_plotting.iterrows():
 This is Joint Grid, could be used, but cannot figure it yet 
 Probably store results in DataFrame and then plot with SNS
 
+!!! Great plotting resource
+
+http://susheel1.blogspot.com/2017/01/useful-graphs-cont.html
 '''
 #https://seaborn.pydata.org/generated/seaborn.regplot.html
 #https://seaborn.pydata.org/geneßrated/seaborn.JointGrid.html#seaborn.JointGrid
