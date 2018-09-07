@@ -17,6 +17,16 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_val_score
 
+from sklearn.metrics import make_scorer
+
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import median_absolute_error
+from sklearn.metrics import explained_variance_score
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_log_error
+
+
 
 df=pd.read_csv('Last_results_v1.csv')
 

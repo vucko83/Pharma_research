@@ -20,6 +20,16 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 
+from sklearn.metrics import make_scorer
+
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import median_absolute_error
+from sklearn.metrics import explained_variance_score
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_log_error
+
+
 '''
 Metrics
 '''
@@ -55,14 +65,6 @@ X,y, n_samples, m_features=prepare_data(data)
 Scoring functions
 '''
 
-from sklearn.metrics import make_scorer
-
-from sklearn.metrics import r2_score
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import median_absolute_error
-from sklearn.metrics import explained_variance_score
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import mean_squared_log_error
 
 def unlog(y, y_pred, measure):
 
